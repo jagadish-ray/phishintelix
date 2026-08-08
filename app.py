@@ -126,7 +126,7 @@ WHITELISTED_DOMAINS = {
     'google.com', 'github.com', 'microsoft.com', 'apple.com', 'amazon.com',
     'facebook.com', 'twitter.com', 'linkedin.com', 'wikipedia.org',
     'stackoverflow.com', 'youtube.com', 'reddit.com', 'netflix.com',
-    'anthropic.com', 'openai.com', 'cloudflare.com',
+    'anthropic.com', 'openai.com', 'cloudflare.com', 'phishintelix.com'
     # Trusted email tracking & business services
     'awstrack.me', 'webex.com', 'zoom.us', 'tryhackme.com',
     'salesforce.com', 'hubspot.com', 'mailchimp.com', 'sendgrid.net',
