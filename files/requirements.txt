@@ -4,4 +4,3 @@ scikit-learn
 joblib
 matplotlib
 pyspellchecker
-gunicorn
