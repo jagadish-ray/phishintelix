@@ -126,7 +126,8 @@ WHITELISTED_DOMAINS = {
     'google.com', 'github.com', 'microsoft.com', 'apple.com', 'amazon.com',
     'facebook.com', 'twitter.com', 'linkedin.com', 'wikipedia.org',
     'stackoverflow.com', 'youtube.com', 'reddit.com', 'netflix.com',
-    'anthropic.com', 'openai.com', 'cloudflare.com', 'phishintelix.com'
+    'anthropic.com', 'openai.com', 'cloudflare.com',
+    'phishintelix.com',  # Our own domain
     # Trusted email tracking & business services
     'awstrack.me', 'webex.com', 'zoom.us', 'tryhackme.com',
     'salesforce.com', 'hubspot.com', 'mailchimp.com', 'sendgrid.net',
@@ -146,17 +147,23 @@ def _get_root_domain(url):
 
 
 def get_verdict(url):
-    ml_features, flags = extract_features(url)
-
-    # Fix 1: Whitelist check
+    # Whitelist check FIRST — before any ML or feature extraction
     root_domain = _get_root_domain(url)
+    hostname = root_domain  # for logging
     if root_domain in WHITELISTED_DOMAINS:
+        # Extract features just for display but force safe verdict
+        try:
+            ml_features, flags = extract_features(url)
+        except Exception:
+            ml_features, flags = {}, []
         return {
             'url': url, 'verdict': 'safe', 'label': 'Likely Safe',
             'ml_score': 0.0, 'final_score': 0.0,
             'flags': [], 'features': ml_features,
             'note': f'Domain "{root_domain}" is whitelisted as a known safe domain.'
         }
+
+    ml_features, flags = extract_features(url)
 
     X = pd.DataFrame([ml_features], columns=FEATURE_ORDER)
     proba = model.predict_proba(X)[0]
@@ -458,25 +465,24 @@ def index():
             vt_key = VT_API_KEY
             adv_findings, adv_summary = run_all_checks(url, vt_api_key=vt_key)
 
-            # ── Recalculate final score including advanced findings ──
-            # Each advanced HIGH = +15%, MEDIUM = +8%, capped at 1.0
-            adv_boost = min(
-                adv_summary.get('high', 0) * 0.15 +
-                adv_summary.get('medium', 0) * 0.08, 0.6)
-            raw_final = (result['final_score'] / 100) + adv_boost
-            new_final = round(min(raw_final, 1.0) * 100, 1)
+            # Only apply advanced boost if NOT whitelisted
+            if result['final_score'] > 0 or result['verdict'] != 'safe':
+                adv_boost = min(
+                    adv_summary.get('high', 0) * 0.15 +
+                    adv_summary.get('medium', 0) * 0.08, 0.6)
+                raw_final = (result['final_score'] / 100) + adv_boost
+                new_final = round(min(raw_final, 1.0) * 100, 1)
 
-            # Update verdict based on new score
-            if new_final >= 60:
-                new_verdict, new_label = 'phishing', 'Likely Phishing'
-            elif new_final >= 30:
-                new_verdict, new_label = 'suspicious', 'Suspicious'
-            else:
-                new_verdict, new_label = 'safe', 'Likely Safe'
+                if new_final >= 60:
+                    new_verdict, new_label = 'phishing', 'Likely Phishing'
+                elif new_final >= 30:
+                    new_verdict, new_label = 'suspicious', 'Suspicious'
+                else:
+                    new_verdict, new_label = 'safe', 'Likely Safe'
 
-            result['final_score'] = new_final
-            result['verdict']     = new_verdict
-            result['label']       = new_label
+                result['final_score'] = new_final
+                result['verdict']     = new_verdict
+                result['label']       = new_label
 
             increment_stats(result['verdict'] == 'phishing')
             append_history(result)
