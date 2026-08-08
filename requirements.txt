@@ -6,3 +6,6 @@ matplotlib
 pyspellchecker
 gunicorn
 reportlab
+requests
+python-whois
+extract-msg
