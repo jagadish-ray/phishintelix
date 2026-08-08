@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<title>Scan History — PhishIntelix</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:10px}
+.logo img{height:52px;width:52px;object-fit:contain;border-radius:10px}
+.logo-text{display:flex;flex-direction:column;line-height:1.2;gap:1px}
+.logo-name{font-size:24px;font-weight:700;color:var(--teal)}
+.logo-tag{font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace}
+.nav-links{display:flex;gap:20px;font-size:14px;color:var(--dim)}
+.nav-links a:hover{color:var(--teal)}
+.nav-links a.active{color:var(--teal)}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.wrap{max-width:1100px;margin:0 auto;padding:48px 24px 80px}
+.page-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.page-title{font-size:32px;font-weight:700;letter-spacing:-.5px;margin-bottom:8px}
+.page-sub{color:var(--dim);font-size:15px;margin-bottom:28px}
+
+/* Summary cards */
+.summary-row{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.sum-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 22px;min-width:130px}
+.sum-num{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.sum-label{font-size:12px;color:var(--dim);margin-top:2px}
+.c-teal{color:var(--teal)}.c-red{color:var(--red)}.c-amber{color:var(--amber)}.c-green{color:var(--green)}
+
+/* Tabs */
+.tab-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.tab-head{display:flex;border-bottom:1px solid var(--border)}
+.tab-btn{flex:1;padding:14px;text-align:center;font-size:14px;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Space Grotesk',sans-serif}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Filter row */
+.filter-row{display:flex;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.filter-btn{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--dim);cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:.2s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--teal);color:var(--teal)}
+.filter-btn.active{background:rgba(0,229,255,.06)}
+.search-input{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:.2s;min-width:220px}
+.search-input:focus{border-color:var(--teal)}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:rgba(0,229,255,.04);padding:11px 14px;text-align:left;font-weight:600;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:.15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+td{padding:11px 14px;vertical-align:middle}
+.url-cell{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.verdict-badge{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.badge-safe{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.badge-suspicious{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.badge-phishing{background:rgba(255,77,109,.12);color:var(--red);border:1px solid rgba(255,77,109,.25)}
+.score-bar-wrap{display:flex;align-items:center;gap:8px}
+.score-bar{height:5px;border-radius:3px;background:var(--border);width:70px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px}
+.fill-safe{background:var(--green)}.fill-suspicious{background:var(--amber)}.fill-phishing{background:var(--red)}
+.score-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);width:34px}
+.ts{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim)}
+.view-btn{background:rgba(0,229,255,.08);color:var(--teal);border:1px solid rgba(0,229,255,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:.2s;white-space:nowrap}
+.view-btn:hover{background:rgba(0,229,255,.15)}
+.empty{text-align:center;padding:60px 20px;color:var(--dim)}
+.empty .ei{font-size:44px;margin-bottom:12px}
+.scan-link{display:inline-block;margin-top:12px;background:var(--teal);color:#00131a;padding:10px 22px;border-radius:8px;font-weight:600;font-size:13px}
+footer{text-align:center;padding:28px;border-top:1px solid var(--border);color:var(--dim);font-size:13px;margin-top:40px}
+@media(max-width:768px){.nav-links{display:none}.url-cell{max-width:160px}}
+
+/* HAMBURGER MENU */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel2)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;backdrop-filter:blur(12px)}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:var(--text);text-decoration:none;transition:.2s}
+.mobile-menu a:hover{color:var(--teal)}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:var(--dim);border:1px solid var(--border);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.mobile-cta-btn{background:var(--teal) !important;color:#00131a !important;padding:10px 28px;border-radius:10px;font-weight:700 !important}
+@media(max-width:768px){.nav-links,.nav-cta{display:none !important}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <img src="/static/logo.png" alt="PhishIntelix">
+    <div class="logo-text">
+      <span class="logo-name">PhishIntelix</span>
+      <span class="logo-tag">DETECT · ANALYZE · PROTECT</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="/">Scanner</a>
+    <a href="/email-scanner">Email Scanner</a>
+    <a href="/history" class="active">History</a>
+    <a href="/#blog">Blog</a>
+    <a href="/#contact">Contact</a>
+  </div>
+  <a href="/" class="back">← Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+  <a href="/#contact" onclick="closeMobileMenu()">📬 Contact</a>
+  <a href="/email-scanner" class="mobile-cta-btn" onclick="closeMobileMenu()">⚡ Scan Email</a>
+</div>
+
+<div class="wrap">
+  <div class="page-tag">📋 Audit Trail</div>
+  <div class="page-title">Scan History</div>
+  <div class="page-sub">All URLs and emails scanned through PhishIntelix — most recent first.</div>
+
+  <!-- Summary -->
+  <div class="summary-row">
+    <div class="sum-card"><div class="sum-num c-teal">{{ url_records|length + email_records|length }}</div><div class="sum-label">Total Scans</div></div>
+    <div class="sum-card"><div class="sum-num c-red">{{ (url_records + email_records)|selectattr('verdict','eq','phishing')|list|length }}</div><div class="sum-label">Phishing Detected</div></div>
+    <div class="sum-card"><div class="sum-num c-amber">{{ (url_records + email_records)|selectattr('verdict','eq','suspicious')|list|length }}</div><div class="sum-label">Suspicious</div></div>
+    <div class="sum-card"><div class="sum-num c-green">{{ (url_records + email_records)|selectattr('verdict','eq','safe')|list|length }}</div><div class="sum-label">Safe</div></div>
+    <div class="sum-card"><div class="sum-num c-teal">{{ url_records|length }}</div><div class="sum-label">URL Scans</div></div>
+    <div class="sum-card"><div class="sum-num c-teal">{{ email_records|length }}</div><div class="sum-label">Email Scans</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-panel">
+    <div class="tab-head">
+      <button class="tab-btn active" onclick="switchTab('url', this)">🔗 URL Scans ({{ url_records|length }})</button>
+      <button class="tab-btn" onclick="switchTab('email', this)">📧 Email Scans ({{ email_records|length }})</button>
+    </div>
+
+    <!-- URL Tab -->
+    <div class="tab-content active" id="tab-url">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterTable('url-table','all',this)">All</button>
+        <button class="filter-btn" onclick="filterTable('url-table','phishing',this)">🔴 Phishing</button>
+        <button class="filter-btn" onclick="filterTable('url-table','suspicious',this)">🟡 Suspicious</button>
+        <button class="filter-btn" onclick="filterTable('url-table','safe',this)">🟢 Safe</button>
+        <input class="search-input" type="text" placeholder="Search URL..." oninput="searchTable('url-table', this.value)">
+      </div>
+      {% if url_records %}
+      <table id="url-table">
+        <thead><tr><th>#</th><th>URL</th><th>Verdict</th><th>Risk Score</th><th>ML Score</th><th>Flags</th><th>Timestamp</th></tr></thead>
+        <tbody>
+        {% for r in url_records %}
+        <tr data-verdict="{{ r.verdict }}">
+          <td style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:11px">{{ loop.index }}</td>
+          <td><div class="url-cell" title="{{ r.url }}">{{ r.url[:60] }}{% if r.url|length > 60 %}...{% endif %}</div></td>
+          <td><span class="verdict-badge badge-{{ r.verdict }}">{% if r.verdict=='phishing' %}🔴{% elif r.verdict=='suspicious' %}🟡{% else %}🟢{% endif %} {{ r.label }}</span></td>
+          <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill fill-{{ r.verdict }}" style="width:{{ r.final_score }}%"></div></div><span class="score-text">{{ r.final_score }}%</span></div></td>
+          <td><span class="score-text">{{ r.ml_score }}%</span></td>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{% if r.flags > 0 %}var(--amber){% else %}var(--dim){% endif %}">{{ r.flags }}</span></td>
+          <td><span class="ts">{{ r.timestamp }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty"><div class="ei">🔗</div><p>No URL scans yet.</p><a href="/" class="scan-link">⚡ Scan a URL</a></div>
+      {% endif %}
+    </div>
+
+    <!-- Email Tab -->
+    <div class="tab-content" id="tab-email">
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterTable('email-table','all',this)">All</button>
+        <button class="filter-btn" onclick="filterTable('email-table','phishing',this)">🔴 Phishing</button>
+        <button class="filter-btn" onclick="filterTable('email-table','suspicious',this)">🟡 Suspicious</button>
+        <button class="filter-btn" onclick="filterTable('email-table','safe',this)">🟢 Safe</button>
+        <input class="search-input" type="text" placeholder="Search sender..." oninput="searchTable('email-table', this.value)">
+      </div>
+      {% if email_records %}
+      <table id="email-table">
+        <thead><tr><th>#</th><th>Sender</th><th>Verdict</th><th>Risk Score</th><th>HIGH</th><th>MEDIUM</th><th>Timestamp</th></tr></thead>
+        <tbody>
+        {% for r in email_records %}
+        <tr data-verdict="{{ r.verdict }}">
+          <td style="color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:11px">{{ loop.index }}</td>
+          <td><div class="url-cell" title="{{ r.sender or 'Unknown' }}">{{ r.sender or 'Not provided' }}</div></td>
+          <td><span class="verdict-badge badge-{{ r.verdict }}">{% if r.verdict=='phishing' %}🔴{% elif r.verdict=='suspicious' %}🟡{% else %}🟢{% endif %} {{ r.label }}</span></td>
+          <td><div class="score-bar-wrap"><div class="score-bar"><div class="score-fill fill-{{ r.verdict }}" style="width:{{ r.score }}%"></div></div><span class="score-text">{{ r.score }}%</span></div></td>
+          <td><span style="color:var(--red);font-family:'JetBrains Mono',monospace;font-size:12px">{{ r.high }}</span></td>
+          <td><span style="color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:12px">{{ r.medium }}</span></td>
+          <td><span class="ts">{{ r.timestamp }}</span></td>
+
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty"><div class="ei">📧</div><p>No email scans yet.</p><a href="/email-scanner" class="scan-link">⚡ Scan an Email</a></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<footer>© {{ cfg.COPYRIGHT_YEAR }} {{ cfg.SITE_NAME }} · Built with ❤️ by {{ cfg.AUTHOR_NAME }}</footer>
+
+<script>
+function switchTab(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + type).classList.add('active');
+}
+
+function filterTable(tableId, verdict, btn) {
+  const section = document.getElementById('tab-' + tableId.split('-')[0]);
+  section.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+    row.style.display = (verdict === 'all' || row.dataset.verdict === verdict) ? '' : 'none';
+  });
+}
+
+function searchTable(tableId, q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+    const cell = row.querySelector('.url-cell');
+    if (cell) row.style.display = cell.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+</script>
+
+<script>
+function openMobileMenu(){
+  document.getElementById('mobileMenu').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>

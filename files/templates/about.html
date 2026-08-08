@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<title>About — PhishIntelix</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo img{height:52px;width:52px;object-fit:contain;border-radius:10px}
+.logo-text{display:flex;flex-direction:column;line-height:1.2;gap:1px}
+.logo-name{font-size:24px;font-weight:700;color:var(--teal)}
+.logo-tag{font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace}
+.nav-links{display:flex;gap:24px;font-size:14px;color:var(--dim)}
+.nav-links a:hover{color:var(--teal)}
+.nav-links a.active{color:var(--teal)}
+.nav-cta{background:var(--teal);color:#00131a;padding:9px 20px;border-radius:8px;font-weight:600;font-size:14px}
+
+.hero{padding:70px 24px 50px;text-align:center;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(0,229,255,.07),transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);border-radius:100px;padding:6px 16px;font-size:12px;color:var(--teal);margin-bottom:20px;font-family:'JetBrains Mono',monospace}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:12px}
+.hero h1 span{color:var(--teal)}
+.hero p{max-width:620px;margin:0 auto;color:var(--dim);font-size:16px;line-height:1.7}
+
+.wrap{max-width:1000px;margin:0 auto;padding:48px 24px 80px}
+.section-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* About panel */
+.about-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:32px;position:relative}
+.about-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--green))}
+.about-body{padding:28px}
+.about-body p{color:#cbd5e1;font-size:15px;line-height:1.8;margin-bottom:14px}
+.about-body p:last-child{margin:0}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:32px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+.stat-num{font-size:30px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal);line-height:1}
+.stat-label{font-size:12px;color:var(--dim);margin-top:6px}
+
+/* Tech stack */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.tech-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;transition:.2s}
+.tech-card:hover{border-color:rgba(0,229,255,.3);transform:translateY(-2px)}
+.tech-icon{font-size:24px;flex-shrink:0}
+.tech-info h4{font-size:13px;font-weight:600;margin-bottom:2px}
+.tech-info p{font-size:11px;color:var(--dim);margin:0}
+
+/* Features */
+.feature-list{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+.feature-item{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px}
+.fi{font-size:20px;flex-shrink:0;margin-top:1px}
+.feature-item h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.feature-item p{font-size:13px;color:var(--dim);margin:0;line-height:1.5}
+
+/* How it works */
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:32px}
+.how-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px}
+.how-num{font-size:32px;font-weight:700;font-family:'JetBrains Mono',monospace;color:rgba(0,229,255,.2);margin-bottom:10px}
+.how-card h3{font-size:14px;font-weight:600;margin-bottom:6px}
+.how-card p{font-size:13px;color:var(--dim);margin:0;line-height:1.6}
+
+/* Contact */
+.contact-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+.contact-chip{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:14px;transition:.2s}
+.contact-chip:hover{border-color:var(--teal);color:var(--teal)}
+.contact-chip span{color:var(--dim);font-size:11px;font-family:'JetBrains Mono',monospace;display:block}
+
+/* Credit */
+.credit{background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.12);border-radius:14px;padding:22px 24px;text-align:center;color:var(--dim);font-size:14px;line-height:1.8}
+.credit strong{color:var(--text)}
+
+footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;color:var(--dim);font-size:13px;margin-top:20px}
+@media(max-width:768px){.nav-links,.nav-cta{display:none}}
+
+/* HAMBURGER MENU */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel2)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;backdrop-filter:blur(12px)}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:var(--text);text-decoration:none;transition:.2s}
+.mobile-menu a:hover{color:var(--teal)}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:var(--dim);border:1px solid var(--border);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.mobile-cta-btn{background:var(--teal) !important;color:#00131a !important;padding:10px 28px;border-radius:10px;font-weight:700 !important}
+@media(max-width:768px){.nav-links,.nav-cta{display:none !important}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img src="/static/logo.png" alt="PhishIntelix">
+    <div class="logo-text">
+      <span class="logo-name">PhishIntelix</span>
+      <span class="logo-tag">DETECT · ANALYZE · PROTECT</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="/">Scanner</a>
+    <a href="/email-scanner">Email Scanner</a>
+    <a href="/history">History</a>
+    <a href="/#blog">Blog</a>
+    <a href="/about" class="active">About</a>
+  </div>
+  <a href="/" class="nav-cta">Scan a URL</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+  <a href="/#contact" onclick="closeMobileMenu()">📬 Contact</a>
+  <a href="/email-scanner" class="mobile-cta-btn" onclick="closeMobileMenu()">⚡ Scan Email</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🛡️ AI-Powered Cybersecurity Tool</div>
+  <h1>About <span>PhishIntelix</span></h1>
+  <p>An intelligent phishing detection platform that combines machine learning with multi-layer heuristic analysis to protect users from phishing URLs and malicious emails.</p>
+</div>
+
+<div class="wrap">
+
+  <!-- ABOUT -->
+  <div class="section-title">📋 What is PhishIntelix?</div>
+  <div class="about-panel">
+    <div class="about-body">
+      <p><strong style="color:var(--teal)">PhishIntelix</strong> is a free, AI-powered phishing detection platform built to help individuals, security researchers, and IT professionals identify malicious URLs and phishing emails in real time.</p>
+      <p>Phishing attacks account for over 90% of data breaches worldwide. Traditional security tools rely on known blacklists and miss new threats. PhishIntelix solves this by combining a trained machine learning model with 5 layers of URL analysis and 10 layers of email analysis — catching both known and zero-day phishing attacks.</p>
+      <p>The system performs live checks including SSL certificate verification, WHOIS domain age analysis, typosquatting detection using Levenshtein distance, open redirect detection, and cross-references URLs against VirusTotal (70+ engines) and Google Safe Browsing — all in one scan.</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section-title">📊 Project Stats</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">99.86%</div><div class="stat-label">Model Accuracy</div></div>
+    <div class="stat-card"><div class="stat-num">20,918</div><div class="stat-label">Training URLs</div></div>
+    <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">ML Models Compared</div></div>
+    <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">URL Detection Layers</div></div>
+    <div class="stat-card"><div class="stat-num">10</div><div class="stat-label">Email Detection Layers</div></div>
+    <div class="stat-card"><div class="stat-num">70+</div><div class="stat-label">VirusTotal Engines</div></div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section-title">⚙️ How It Works</div>
+  <div class="how-grid">
+    <div class="how-card">
+      <div class="how-num">01</div>
+      <h3>ML Classification</h3>
+      <p>7 URL features extracted and fed into a Decision Tree classifier trained on 20,918 URLs to predict phishing probability.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">02</div>
+      <h3>Heuristic Analysis</h3>
+      <p>5 independent rule-based layers check for open redirects, URL shorteners, SSL validity, domain age, and typosquatting.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">03</div>
+      <h3>Hybrid Scoring</h3>
+      <p>ML score and heuristic findings are combined using a weighted formula to produce a final risk score with verdict.</p>
+    </div>
+    <div class="how-card">
+      <div class="how-num">04</div>
+      <h3>API Verification</h3>
+      <p>URLs are cross-checked in real time against VirusTotal (70+ AV engines) and Google Safe Browsing database.</p>
+    </div>
+  </div>
+
+  <!-- KEY FEATURES -->
+  <div class="section-title">🚀 Key Features</div>
+  <div class="feature-list">
+    <div class="feature-item"><div class="fi">🤖</div><div><h4>Machine Learning URL Detection</h4><p>Decision Tree classifier trained on 20,918 URLs, compared against 5 other algorithms for best performance.</p></div></div>
+    <div class="feature-item"><div class="fi">🔒</div><div><h4>Live SSL & Domain Verification</h4><p>Real-time SSL certificate check, WHOIS domain age lookup, and homograph attack detection on every scan.</p></div></div>
+    <div class="feature-item"><div class="fi">🕵️</div><div><h4>Typosquatting Detection</h4><p>Levenshtein distance algorithm checks domains against 25+ popular brands to catch paypa1.com style attacks.</p></div></div>
+    <div class="feature-item"><div class="fi">📧</div><div><h4>Email Phishing Scanner</h4><p>10-layer email analysis covering urgency detection, social engineering, spelling check, hidden links, sender verification, SPF/DKIM/DMARC header analysis, and file upload support (.eml, .msg, .txt, .html).</p></div></div>
+    <div class="feature-item"><div class="fi">🌐</div><div><h4>VirusTotal + Google Safe Browsing</h4><p>Every URL is cross-referenced against 70+ antivirus engines and Google's threat intelligence database in real time.</p></div></div>
+    <div class="feature-item"><div class="fi">📄</div><div><h4>PDF Report Generation</h4><p>Professional downloadable threat report with full findings, risk score, ML features, and security recommendations.</p></div></div>
+    <div class="feature-item"><div class="fi">📋</div><div><h4>Scan History</h4><p>Full audit trail of all URL and email scans with filter, search, and email body viewer.</p></div></div>
+    <div class="feature-item"><div class="fi">🔀</div><div><h4>Open Redirect & Encoding Detection</h4><p>Detects 15+ redirect parameters and decodes percent-encoding, double-encoding, and base64 hidden URLs.</p></div></div>
+    <div class="feature-item"><div class="fi">🔐</div><div><h4>SPF / DKIM / DMARC Header Analysis</h4><p>Parses raw email headers to verify SPF sender authorisation, DKIM cryptographic signature, and DMARC domain alignment policy. Also detects From vs Return-Path mismatch, Reply-To hijacking, and bulk mailer signatures — all classic email spoofing indicators.</p></div></div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section-title">⚙️ Tech Stack</div>
+  <div class="tech-grid">
+    <div class="tech-card"><div class="tech-icon">🐍</div><div class="tech-info"><h4>Python 3</h4><p>Core backend language</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🌶️</div><div class="tech-info"><h4>Flask</h4><p>Web framework</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🤖</div><div class="tech-info"><h4>Scikit-learn</h4><p>ML model training</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🐼</div><div class="tech-info"><h4>Pandas</h4><p>Data processing</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🔒</div><div class="tech-info"><h4>SSL / Socket</h4><p>Certificate verification</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🌐</div><div class="tech-info"><h4>WHOIS</h4><p>Domain age lookup</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🦠</div><div class="tech-info"><h4>VirusTotal API</h4><p>URL reputation check</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🔵</div><div class="tech-info"><h4>Google Safe Browsing</h4><p>Threat intelligence</p></div></div>
+    <div class="tech-card"><div class="tech-icon">📄</div><div class="tech-info"><h4>ReportLab</h4><p>PDF report generation</p></div></div>
+    <div class="tech-card"><div class="tech-icon">✏️</div><div class="tech-info"><h4>PySpellChecker</h4><p>Email spell checking</p></div></div>
+    <div class="tech-card"><div class="tech-icon">🎨</div><div class="tech-info"><h4>HTML / CSS / JS</h4><p>Frontend interface</p></div></div>
+    <div class="tech-card"><div class="tech-icon">📊</div><div class="tech-info"><h4>Matplotlib</h4><p>Model evaluation charts</p></div></div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="section-title">📬 Contact</div>
+  <div class="contact-row">
+    <a href="mailto:phishintelix@gmail.com" class="contact-chip">
+      ✉️ <div><span>Email</span>phishintelix@gmail.com</div>
+    </a>
+    <a href="https://github.com/jagadish-ray" target="_blank" class="contact-chip">
+      🐙 <div><span>GitHub</span>github.com/jagadish-ray</div>
+    </a>
+    <a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank" class="contact-chip">
+      🔗 <div><span>LinkedIn</span>linkedin.com/in/jagadish-ray</div>
+    </a>
+  </div>
+
+  <!-- CREDIT -->
+  <div class="credit">
+    PhishIntelix is a free, open cybersecurity tool built for educational and awareness purposes.<br>
+    Designed to help users identify and protect themselves from phishing threats.<br><br>
+    <strong>Built by Jagadish Ray</strong>
+  </div>
+
+</div>
+
+<footer>© 2026 PhishIntelix · AI-Powered Phishing Detection · Built for Cybersecurity Awareness</footer>
+
+
+<script>
+function openMobileMenu(){
+  document.getElementById('mobileMenu').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishIntelix — AI Phishing Detection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060b14;--panel:#0d1525;--panel2:#111827;
+  --border:#1e293b;--text:#e2e8f0;--dim:#64748b;
+  --teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(6,11,20,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:16px 0}
+.nav-inner{max-width:1200px;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:22px;font-weight:700;color:var(--teal);letter-spacing:-.5px;display:flex;align-items:center;gap:10px}
+.nav-links{display:flex;gap:28px;font-size:14px;color:var(--dim)}
+.nav-links a:hover{color:var(--teal);transition:.2s}
+.nav-cta{background:var(--teal);color:#00131a;padding:9px 20px;border-radius:8px;font-weight:600;font-size:14px;transition:.2s}
+.nav-cta:hover{filter:brightness(1.1)}
+
+/* HERO */
+.hero{padding:110px 24px 80px;text-align:center;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(0,229,255,.08),transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--teal);margin-bottom:28px;font-family:'JetBrains Mono',monospace}
+.hero h1{font-size:clamp(32px,5vw,62px);font-weight:700;line-height:1.1;letter-spacing:-1.5px;margin-bottom:20px}
+.hero h1 span{color:var(--teal)}
+.hero p{max-width:620px;margin:0 auto 40px;color:var(--dim);font-size:17px;line-height:1.7}
+
+/* SCAN BOX */
+.scan-box{max-width:820px;margin:0 auto;background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:0 0 60px rgba(0,229,255,.05)}
+.scan-form{display:flex;gap:10px;margin-bottom:14px}
+.scan-input-wrap{flex:1;display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:0 16px;transition:.2s}
+.scan-input-wrap:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,229,255,.1)}
+.scan-prompt{color:var(--teal);font-family:'JetBrains Mono',monospace;font-size:15px}
+.scan-input-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;padding:15px 0}
+.scan-input-wrap input::placeholder{color:var(--dim)}
+.scan-btn{background:var(--teal);color:#00131a;border:none;border-radius:12px;padding:0 28px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;letter-spacing:.04em;transition:.2s;white-space:nowrap}
+.scan-btn:hover{filter:brightness(1.1)}
+.scan-note{font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+
+/* TICKER */
+.ticker{overflow:hidden;white-space:nowrap;background:rgba(248,113,113,.06);border-top:1px solid rgba(248,113,113,.15);border-bottom:1px solid rgba(248,113,113,.15);padding:11px 0}
+.ticker-inner{display:inline-block;animation:tick 30s linear infinite}
+.ticker-inner span{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:12px;margin:0 28px}
+@keyframes tick{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+
+/* ERROR */
+.error-bar{max-width:820px;margin:12px auto 0;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:12px 18px;color:var(--red);font-family:'JetBrains Mono',monospace;font-size:13px}
+
+/* RESULT */
+.result-wrap{max-width:900px;margin:28px auto 0;padding:0 24px;display:flex;flex-direction:column;gap:16px}
+.result-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.result-header{display:flex;align-items:center;gap:20px;padding:24px;border-bottom:1px solid var(--border)}
+.gauge-wrap{flex-shrink:0;width:100px;height:100px;position:relative}
+.gauge-wrap svg{transform:rotate(-90deg)}
+.gauge-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace}
+.gauge-pct{font-size:22px;font-weight:700}
+.gauge-sub{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.result-meta{flex:1;min-width:0}
+.verdict-text{font-size:20px;font-weight:700;margin-bottom:4px}
+.verdict-url{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);word-break:break-all;margin-bottom:10px}
+.score-pills{display:flex;gap:10px;flex-wrap:wrap}
+.pill{background:var(--panel2);border:1px solid var(--border);border-radius:100px;padding:4px 14px;font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.pill strong{color:var(--text)}
+.c-safe{color:var(--green)}.c-suspicious{color:var(--amber)}.c-phishing{color:var(--red)}
+.stroke-safe{stroke:var(--green)}.stroke-suspicious{stroke:var(--amber)}.stroke-phishing{stroke:var(--red)}
+
+/* FLAGS */
+.flags-section{padding:16px 24px;border-bottom:1px solid var(--border)}
+.flags-title{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-bottom:10px;text-transform:uppercase;letter-spacing:.06em}
+.flag-line{display:flex;align-items:flex-start;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;margin-bottom:6px;opacity:0;animation:fadein .3s ease forwards}
+.flag-line .ftag{flex-shrink:0;font-weight:600}
+.ftag-warn{color:var(--amber)}.ftag-ok{color:var(--green)}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1}}
+
+/* ADVANCED FINDINGS */
+.adv-panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.adv-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.adv-title{font-size:15px;font-weight:600}
+.sev-pills{display:flex;gap:8px}
+.sev-pill{font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:6px;padding:3px 10px;font-weight:600}
+.sev-high{background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)}
+.sev-med{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+.sev-info{background:rgba(100,116,139,.12);color:var(--dim);border:1px solid rgba(100,116,139,.2)}
+.adv-body{padding:6px 0}
+.adv-category{padding:10px 24px 4px;font-size:11px;font-weight:600;color:var(--teal);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--border);margin-top:4px}
+.adv-category:first-child{border-top:none;margin-top:0}
+.adv-finding{display:flex;align-items:flex-start;gap:10px;padding:6px 24px;font-size:13px;line-height:1.5;opacity:0;animation:fadein .25s ease forwards}
+.adv-finding:hover{background:rgba(255,255,255,.02)}
+.sev-dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;margin-top:6px}
+.dot-HIGH{background:var(--red)}.dot-MEDIUM{background:var(--amber)}.dot-LOW{background:var(--green)}.dot-INFO{background:var(--dim)}
+.sev-badge{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;width:52px}
+.badge-HIGH{color:var(--red)}.badge-MEDIUM{color:var(--amber)}.badge-LOW{color:var(--green)}.badge-INFO{color:var(--dim)}
+.finding-msg{color:var(--text);flex:1}
+.finding-msg.dim{color:var(--dim)}
+
+/* FEATURES + DOWNLOAD */
+.result-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;flex-wrap:wrap;gap:10px}
+.feat-grid{display:flex;flex-wrap:wrap;gap:8px}
+.feat-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.feat-chip b{color:var(--text)}
+.dl-btn{background:var(--green);color:#04140d;border:none;border-radius:10px;padding:10px 22px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:8px;transition:.2s}
+.dl-btn:hover{filter:brightness(1.08)}
+
+/* SECTIONS */
+.stats{max-width:1200px;margin:80px auto;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center}
+.stat-num{font-size:42px;font-weight:700;color:var(--teal);line-height:1}
+.stat-label{margin-top:6px;color:var(--dim);font-size:14px}
+.section{max-width:1200px;margin:0 auto;padding:80px 24px}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.section-title{font-size:clamp(24px,3vw,38px);font-weight:700;letter-spacing:-.5px;margin-bottom:50px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.step{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;overflow:hidden}
+.step::before{content:attr(data-n);position:absolute;right:16px;top:12px;font-size:64px;font-weight:700;color:rgba(0,229,255,.05);font-family:'JetBrains Mono',monospace;line-height:1}
+.step-icon{font-size:28px;margin-bottom:14px}
+.step h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.step p{color:var(--dim);font-size:14px;line-height:1.6}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.feat-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;transition:.2s}
+.feat-card:hover{border-color:rgba(0,229,255,.3);transform:translateY(-2px)}
+.feat-icon{width:44px;height:44px;border-radius:10px;background:rgba(0,229,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+.feat-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.feat-card p{color:var(--dim);font-size:14px;line-height:1.6}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.blog-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:.2s}
+.blog-card:hover{border-color:rgba(0,229,255,.2);transform:translateY(-2px)}
+.blog-thumb{height:160px;display:flex;align-items:center;justify-content:center;font-size:48px}
+.blog-body{padding:20px}
+.blog-tag{font-size:11px;color:var(--teal);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.blog-card h3{font-size:15px;font-weight:600;margin-bottom:8px;line-height:1.4}
+.blog-card p{color:var(--dim);font-size:13px;line-height:1.6}
+.model-table{width:100%;border-collapse:collapse;font-size:13px}
+.model-table th{background:var(--teal);color:#00131a;padding:10px 14px;text-align:left;font-weight:600}
+.model-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--dim)}
+.model-table tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.model-table tr:first-child td{color:var(--text);background:rgba(0,229,255,.05)}
+.model-table td:first-child{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px}
+.badge-best{display:inline-block;background:rgba(0,229,255,.15);color:var(--teal);border-radius:4px;padding:2px 8px;font-size:10px;font-family:'JetBrains Mono',monospace;margin-left:6px}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.contact-info h3{font-size:22px;font-weight:700;margin-bottom:12px}
+.contact-info p{color:var(--dim);font-size:15px;line-height:1.7;margin-bottom:24px}
+.contact-items{display:flex;flex-direction:column;gap:14px}
+.ci{display:flex;align-items:center;gap:14px;font-size:14px}
+.ci-icon{width:40px;height:40px;border-radius:10px;background:rgba(0,229,255,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ci-label{font-size:11px;color:var(--dim);margin-bottom:2px;font-family:'JetBrains Mono',monospace}
+.contact-form{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px}
+.cf-label{font-size:12px;color:var(--dim);margin-bottom:4px;display:block}
+.cf-input{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:.2s}
+.cf-input:focus{border-color:var(--teal)}
+.cf-input.ta{height:110px;resize:vertical}
+.cf-btn{background:var(--teal);color:#00131a;border:none;border-radius:10px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:.2s}
+.cf-btn:hover{filter:brightness(1.1)}
+.divider{max-width:1200px;margin:0 auto;padding:0 24px}
+.divider hr{border:none;border-top:1px solid var(--border)}
+footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px}
+.footer-inner{max-width:1200px;margin:auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand p{color:var(--dim);font-size:14px;line-height:1.7;margin-top:10px;max-width:280px}
+.footer-col h4{font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.footer-col ul li a{color:var(--dim);font-size:13px;transition:.2s}
+.footer-col ul li a:hover{color:var(--teal)}
+.footer-bottom{max-width:1200px;margin:32px auto 0;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.footer-bottom p{color:var(--dim);font-size:13px}
+.footer-socials{display:flex;gap:12px}
+.social-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:15px;transition:.2s}
+.social-btn:hover{border-color:var(--teal);color:var(--teal)}
+
+/* HAMBURGER MENU */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:.3s}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:28px;backdrop-filter:blur(12px)}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:22px;font-weight:600;color:var(--text);transition:.2s;text-decoration:none}
+.mobile-menu a:hover{color:var(--teal)}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:28px;cursor:pointer;color:var(--dim);border:1px solid var(--border);border-radius:8px;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
+.mobile-cta{background:var(--teal);color:#00131a !important;padding:12px 32px;border-radius:10px;font-weight:700 !important}
+
+@media(max-width:768px){
+  .nav-links,.nav-cta{display:none}
+  .hamburger{display:flex}
+  .scan-form{flex-direction:column}
+  .scan-btn{padding:15px}
+  .result-header{flex-direction:column;text-align:center}
+  .score-pills{justify-content:center}
+  .contact-grid,.footer-inner{grid-template-columns:1fr}
+  .result-footer{flex-direction:column}
+  .adv-header{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:var(--teal)">PhishIntelix</span>
+        <span style="font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="#scan">Scanner</a>
+      <a href="/email-scanner">Email Scanner</a>
+      <a href="/history">History</a>
+      <a href="#features">Features</a>
+      <a href="#models">ML Models</a>
+      <a href="#blog">Blog</a>
+      <a href="#contact">Contact</a>
+      <a href="/about">About</a>
+    </div>
+    <a href="#scan" class="nav-cta">Scan a URL</a>
+    <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/#features" onclick="closeMobileMenu()">⚙️ Features</a>
+  <a href="/#comparison" onclick="closeMobileMenu()">🤖 ML Models</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+  <a href="/#contact" onclick="closeMobileMenu()">📬 Contact</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/email-scanner" class="mobile-cta" onclick="closeMobileMenu()">⚡ Scan Email</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="scan">
+  <div class="hero-badge">🛡 AI-Powered · 5-Layer Detection · 99.8% Accuracy</div>
+  <h1>Stop Phishing Attacks<br><span>Before They Reach You</span></h1>
+  <p>Paste any URL and get an instant AI-powered verdict — ML classification + URL parameter analysis + SSL verification + VirusTotal reputation check.</p>
+
+  <div class="scan-box">
+    <form class="scan-form" method="POST" action="/#scan" id="scan-form" onsubmit="onScan()">
+      <div class="scan-input-wrap">
+        <span class="scan-prompt">$</span>
+        <input type="text" name="url" placeholder="https://suspicious-site.com/login"
+               value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input">
+      </div>
+      <button type="submit" class="scan-btn" id="scan-btn">⚡ SCAN URL</button>
+    </form>
+    <div class="scan-note">⚡ 5-layer analysis: ML · URL Params · Hidden Links · SSL/Domain · VirusTotal</div>
+  </div>
+
+  {% if error %}<div class="error-bar">⚠ {{ error }}</div>{% endif %}
+</section>
+
+<!-- RESULT -->
+{% if result %}
+{% set pct = result.final_score %}
+{% set circ = 2 * 3.14159265 * 42 %}
+{% set offset = circ * (1 - pct / 100) %}
+<div class="result-wrap" id="result">
+
+  <!-- ML VERDICT PANEL -->
+  <div class="result-panel">
+    <div class="result-header">
+      <div class="gauge-wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b" stroke-width="9"/>
+          <circle cx="50" cy="50" r="42" fill="none" class="stroke-{{ result.verdict }}"
+                  stroke-width="9" stroke-linecap="round"
+                  stroke-dasharray="{{ circ }}" stroke-dashoffset="{{ offset }}"/>
+        </svg>
+        <div class="gauge-label">
+          <span class="gauge-pct c-{{ result.verdict }}">{{ pct }}%</span>
+          <span class="gauge-sub">risk</span>
+        </div>
+      </div>
+      <div class="result-meta">
+        <div class="verdict-text c-{{ result.verdict }}">{{ result.label }}</div>
+        <div class="verdict-url">{{ result.url }}</div>
+        <div class="score-pills">
+          <span class="pill">ML score: <strong>{{ result.ml_score }}%</strong></span>
+          <span class="pill">Basic flags: <strong>{{ result.flags|length }}</strong></span>
+          {% if adv_summary %}
+          <span class="pill">Adv HIGH: <strong style="color:var(--red)">{{ adv_summary.high }}</strong></span>
+          <span class="pill">Adv MEDIUM: <strong style="color:var(--amber)">{{ adv_summary.medium }}</strong></span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Basic heuristic flags -->
+    {% if result.flags %}
+    <div class="flags-section">
+      <div class="flags-title">Basic Heuristic Flags</div>
+      {% for flag in result.flags %}
+      <div class="flag-line" style="animation-delay:{{ loop.index0 * 0.06 }}s">
+        <span class="ftag ftag-warn">[WARN]</span><span>{{ flag }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="result-footer">
+      <div class="feat-grid">
+        {% for k, v in result.features.items() %}
+        <div class="feat-chip">{{ k }}: <b>{{ v }}</b></div>
+        {% endfor %}
+      </div>
+      <form method="POST" action="/download-report">
+        <input type="hidden" name="url" value="{{ result.url }}">
+        <button type="submit" class="dl-btn">⬇ Download PDF Report</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADVANCED FINDINGS PANEL -->
+  {% if adv_findings %}
+  <div class="adv-panel">
+    <div class="adv-header">
+      <div class="adv-title">🔬 Advanced Threat Analysis</div>
+      <div class="sev-pills">
+        <span class="sev-pill sev-high">HIGH {{ adv_summary.high }}</span>
+        <span class="sev-pill sev-med">MEDIUM {{ adv_summary.medium }}</span>
+        <span class="sev-pill sev-info">INFO {{ adv_summary.info }}</span>
+      </div>
+    </div>
+    <div class="adv-body">
+      {% set ns = namespace(prev_cat='') %}
+      {% for f in adv_findings %}
+        {% if f.category != ns.prev_cat %}
+          <div class="adv-category">{{ f.category }}</div>
+          {% set ns.prev_cat = f.category %}
+        {% endif %}
+        <div class="adv-finding" style="animation-delay:{{ loop.index0 * 0.04 }}s">
+          <span class="sev-dot dot-{{ f.severity }}"></span>
+          <span class="sev-badge badge-{{ f.severity }}">[{{ f.severity }}]</span>
+          <span class="finding-msg {% if f.severity == 'INFO' %}dim{% endif %}">{{ f.message }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endif %}
+
+<!-- TICKER -->
+<div style="margin-top:40px" class="ticker">
+  <div class="ticker-inner">
+    <span>⚠ paypal-security-check.xyz</span><span>⚠ amazon-verify-login.cc</span>
+    <span>⚠ update-banking-now.net</span><span>⚠ secure-microsoft-auth.xyz</span>
+    <span>⚠ fake-gmail-login.cc</span><span>⚠ account-suspended-apple.tk</span>
+    <span>⚠ wellsfargo-alert-login.xyz</span><span>⚠ verify-paypa1-now.cc</span>
+    <span>⚠ support-netflix-billing.net</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-card"><div class="stat-num" id="stat-scans" data-target="{{ stats.total_scans }}">0</div><div class="stat-label">URLs Scanned</div></div>
+  <div class="stat-card"><div class="stat-num" id="stat-phishing" data-target="{{ stats.phishing_detected }}">0</div><div class="stat-label">Phishing Detected</div></div>
+  <div class="stat-card"><div class="stat-num">98.3%</div><div class="stat-label">Detection Accuracy</div></div>
+  <div class="stat-card"><div class="stat-num">5</div><div class="stat-label">Detection Layers</div></div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <div class="section-tag">Process</div>
+  <div class="section-title">5-Layer Detection Engine</div>
+  <div class="steps">
+    <div class="step" data-n="01"><div class="step-icon">🔗</div><h3>URL Parameter Analysis</h3><p>Detects open redirect params (?url=, ?redirect=), base64/percent-encoded hidden URLs, and JavaScript URI injection.</p></div>
+    <div class="step" data-n="02"><div class="step-icon">🕵️</div><h3>Hidden Link Detection</h3><p>Identifies URL shorteners, fragment-based redirects, userinfo cloaking, and anchor text mismatches.</p></div>
+    <div class="step" data-n="03"><div class="step-icon">🔒</div><h3>SSL & Domain Verification</h3><p>Live SSL cert validity, domain age via WHOIS, homograph attack detection, and typosquatting against 25+ brands.</p></div>
+    <div class="step" data-n="04"><div class="step-icon">🤖</div><h3>ML Classification</h3><p>Best model from 6 trained algorithms scores the URL 0–100%. Combined with heuristics for a hybrid final score.</p></div>
+    <div class="step" data-n="05"><div class="step-icon">🌐</div><h3>VirusTotal Reputation</h3><p>Cross-checks the URL against 70+ antivirus and threat intelligence engines via VirusTotal API.</p></div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- FEATURES -->
+<div class="section" id="features">
+  <div class="section-tag">Capabilities</div>
+  <div class="section-title">What We Check</div>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon">🤖</div><h3>ML Classification</h3><p>Six trained algorithms compared — the best performer automatically selected for scanning.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔀</div><h3>Open Redirect Detection</h3><p>Catches ?redirect=, ?url=, ?next= and 15 other param names that could silently forward to malicious sites.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔡</div><h3>Encoding Detection</h3><p>Decodes base64, percent-encoding, and double-encoding used to hide phishing destinations from scanners.</p></div>
+    <div class="feat-card"><div class="feat-icon">🕵️</div><h3>Typosquatting & Homograph</h3><p>Levenshtein-distance check against 25+ brands catches paypa1.com. Unicode homograph detection catches аmazon.com.</p></div>
+    <div class="feat-card"><div class="feat-icon">🔒</div><h3>SSL Certificate Check</h3><p>Live SSL verification — checks expiry date, issuer, and self-signed certificates in real time.</p></div>
+    <div class="feat-card"><div class="feat-icon">📅</div><h3>Domain Age (WHOIS)</h3><p>Newly registered domains (under 30 days) are a top phishing indicator — checked live via WHOIS.</p></div>
+    <div class="feat-card"><div class="feat-icon">🌐</div><h3>VirusTotal API</h3><p>Cross-reference against 70+ antivirus engines. Results shown with malicious/suspicious/clean breakdown.</p></div>
+    <div class="feat-card"><div class="feat-icon">📄</div><h3>PDF Report Export</h3><p>Download a full branded threat report with verdict, all findings, ML features, and security recommendation.</p></div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- MODEL COMPARISON -->
+<div class="section" id="models">
+  <div class="section-tag">Research</div>
+  <div class="section-title">ML Model Comparison</div>
+  <p style="color:var(--dim);font-size:15px;margin-bottom:28px;max-width:640px">We trained and evaluated 6 machine learning algorithms on a labeled phishing URL dataset. The best model by F1-score is automatically selected for scanning.</p>
+  <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border)">
+    <table class="model-table">
+      <thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1 Score</th><th>ROC-AUC</th><th>CV (5-fold)</th></tr></thead>
+      <tbody>
+        <tr><td>Decision Tree <span class="badge-best">★ Best</span></td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.97%</td><td>99.78%</td></tr>
+        <tr><td>Random Forest</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.97%</td><td>99.80%</td></tr>
+        <tr><td>Gradient Boosting</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.97%</td><td>99.76%</td></tr>
+        <tr><td>KNN (k=7)</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.86%</td><td>99.90%</td><td>99.78%</td></tr>
+        <tr><td>SVM (RBF)</td><td>99.59%</td><td>99.59%</td><td>99.59%</td><td>99.59%</td><td>99.98%</td><td>99.59%</td></tr>
+        <tr><td>Logistic Regression</td><td>99.50%</td><td>99.50%</td><td>99.50%</td><td>99.50%</td><td>99.97%</td><td>99.36%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="color:var(--dim);font-size:13px;font-family:'JetBrains Mono',monospace;margin-top:12px">Positive class = phishing · Test set = 20% held-out · 5-fold stratified cross-validation</p>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- BLOG -->
+<div class="section" id="blog">
+  <div class="section-tag">Awareness</div>
+  <div class="section-title">Phishing Awareness Blog</div>
+  <div class="blog-grid">
+    <a href="/blog/what-is-phishing" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#ff4d6d22,#ff4d6d08)">🎣</div><div class="blog-body"><div class="blog-tag">Basics</div><h3>What Is a Phishing Attack?</h3><p>Phishing tricks users into revealing credentials by impersonating trusted sites. Learn how attackers craft convincing fake pages.</p></div></div></a>
+    <a href="/blog/homograph-typosquatting" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#fbbf2422,#fbbf2408)">🔤</div><div class="blog-body"><div class="blog-tag">Advanced</div><h3>Homograph & Typosquatting Attacks</h3><p>How look-alike domains like paypa1.com and Unicode characters bypass visual trust checks — and how ML catches them.</p></div></div></a>
+    <a href="/blog/10-signs-phishing" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#00e5ff22,#00e5ff08)">🔍</div><div class="blog-body"><div class="blog-tag">Guide</div><h3>10 Signs of a Phishing Website</h3><p>Suspicious TLDs, IP-based hosts, missing HTTPS, excessive subdomains — what to check before entering credentials.</p></div></div></a>
+    <a href="/blog/ml-detects-phishing" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#4ade8022,#4ade8008)">🤖</div><div class="blog-body"><div class="blog-tag">Technical</div><h3>How ML Detects Phishing URLs</h3><p>From feature extraction to ensemble classifiers — a look at the intelligence behind automated URL threat scoring.</p></div></div></a>
+    <a href="/blog/open-redirect" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#a855f722,#a855f708)">🔀</div><div class="blog-body"><div class="blog-tag">Advanced</div><h3>Open Redirect Attacks Explained</h3><p>How attackers abuse ?redirect= parameters to hide malicious destinations behind trusted domain names.</p></div></div></a>
+    <a href="/blog/spotting-phishing-emails" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#fb923c22,#fb923c08)">📧</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Spotting Phishing Emails</h3><p>Urgent language, fake sender domains, masked links — the social engineering patterns that fool millions every year.</p></div></div></a>
+    <a href="/blog/email-header-analysis" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#00e5ff22,#00e5ff08)">📨</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Email Header Analysis for Phishing Detection</h3><p>The hidden metadata inside every email reveals whether it is genuine or forged — SPF, DKIM, DMARC explained.</p></div></div></a>
+    <a href="/blog/anatomy-phishing-email" target="_blank" style="text-decoration:none;color:inherit"><div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#ff4d6d22,#ff4d6d08)">🔬</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Anatomy of a Phishing Email</h3><p>Every component of a phishing email dissected — fake domains, fear triggers, masked links, and how ML will detect them.</p></div></div></a>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- CONTACT -->
+<div class="section" id="contact">
+  <div class="section-tag">Get in Touch</div>
+  <div class="section-title">Contact Us</div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h3>Have a question or want to collaborate?</h3>
+      <p>Whether you're a security researcher, student, or organization looking to integrate PhishIntelix — we'd love to hear from you.</p>
+      <div class="contact-items">
+        <div class="ci"><div class="ci-icon">✉️</div><div><div class="ci-label">Official Email</div><a href="mailto:{{ cfg.AUTHOR_EMAIL }}" style="color:var(--teal)">{{ cfg.AUTHOR_EMAIL }}</a></div></div>
+        <div class="ci"><div class="ci-icon">🐙</div><div><div class="ci-label">GitHub</div><a href="{{ cfg.GITHUB_URL }}" target="_blank" style="color:var(--teal)">{{ cfg.GITHUB_URL | replace("https://", "") }}</a></div></div>
+        <div class="ci"><div class="ci-icon">🔗</div><div><div class="ci-label">LinkedIn</div><a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank" style="color:var(--teal)">linkedin.com/in/jagadish-ray</a></div></div>
+      </div>
+    </div>
+    <div class="contact-form">
+      <div id="contact-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:4px"></div>
+      <div><label class="cf-label">Your Name</label><input class="cf-input" id="cf-name" type="text" placeholder="Your name"></div>
+      <div><label class="cf-label">Email Address</label><input class="cf-input" id="cf-email" type="email" placeholder="you@example.com"></div>
+      <div><label class="cf-label">Message</label><textarea class="cf-input ta" id="cf-message" placeholder="Your message..."></textarea></div>
+      <button class="cf-btn" id="cf-submit" onclick="sendContact()">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:var(--teal)">PhishIntelix</span>
+        <span style="font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+      <p>AI-powered phishing URL detection using machine learning and 5-layer advanced threat analysis. </p>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul><li><a href="#scan">URL Scanner</a></li><li><a href="/email-scanner">Email Scanner</a></li><li><a href="#models">ML Models</a></li><li><a href="#features">Features</a></li></ul></div>
+    <div class="footer-col"><h4>Learn</h4><ul><li><a href="#blog">Blog</a></li><li><a href="/about">About</a></li><li><a href="#how">How It Works</a></li><li><a href="#models">Model Comparison</a></li></ul></div>
+    <div class="footer-col"><h4>Connect</h4><ul><li><a href="#contact">Contact</a></li><li><a href="{{ cfg.GITHUB_URL }}" target="_blank">GitHub</a></li><li><a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank">LinkedIn</a></li><li><a href="mailto:{{ cfg.AUTHOR_EMAIL }}">Email Us</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© {{ cfg.COPYRIGHT_YEAR }} {{ cfg.SITE_NAME }}. All rights reserved. Built with ❤️ by {{ cfg.AUTHOR_NAME }}.</p>
+    <div class="footer-socials">
+      <a href="mailto:{{ cfg.AUTHOR_EMAIL }}" class="social-btn" title="Email Us">✉</a>
+      <a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank" class="social-btn" title="LinkedIn">in</a>
+      <a href="{{ cfg.GITHUB_URL }}" target="_blank" class="social-btn" title="GitHub">⌥</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Instant scan counter on button click
+function onScan() {
+  const url = document.getElementById('scan-input').value.trim();
+  if (!url) return;
+
+  // Instantly update the scan counter in UI
+  const scansEl = document.getElementById('stat-scans');
+  if (scansEl) {
+    const current = parseInt(scansEl.textContent.replace(/,/g, '')) || 0;
+    scansEl.textContent = (current + 1).toLocaleString();
+  }
+
+  // Show loading state on button
+  const btn = document.getElementById('scan-btn');
+  if (btn) {
+    btn.textContent = '⏳ Scanning...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+  }
+}
+
+// Count-up animation for stats
+function countUp(el, target, duration=1800) {
+  if (target === 0) { el.textContent = '0'; return; }
+  const start = 0;
+  const step = target / (duration / 16);
+  let current = start;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = Math.floor(current).toLocaleString();
+    if (current >= target) clearInterval(timer);
+  }, 16);
+}
+
+// Run count-up when stats section scrolls into view
+const statsObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('.stat-num[data-target]').forEach(el => {
+        countUp(el, parseInt(el.dataset.target) || 0);
+      });
+      statsObserver.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+
+const statsSection = document.querySelector('.stats');
+if (statsSection) statsObserver.observe(statsSection);
+
+// Auto-refresh stats every 30s (live update without page reload)
+setInterval(async () => {
+  try {
+    const data = await fetch('/stats').then(r => r.json());
+    const scansEl   = document.getElementById('stat-scans');
+    const phishEl   = document.getElementById('stat-phishing');
+    if (scansEl)  { scansEl.dataset.target  = data.total_scans;       scansEl.textContent  = data.total_scans.toLocaleString(); }
+    if (phishEl)  { phishEl.dataset.target  = data.phishing_detected; phishEl.textContent  = data.phishing_detected.toLocaleString(); }
+  } catch(e) {}
+}, 30000);
+
+
+function openMobileMenu() {
+  document.getElementById('mobileMenu').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var menu = document.getElementById('mobileMenu');
+  if (menu) menu.addEventListener('click', function(e) {
+    if (e.target === this) closeMobileMenu();
+  });
+});
+
+async function sendContact() {
+  const btn  = document.getElementById('cf-submit');
+  const msgDiv = document.getElementById('contact-msg');
+  const name  = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const message = document.getElementById('cf-message').value.trim();
+
+  if (!name || !email || !message) {
+    msgDiv.style.display = 'block';
+    msgDiv.style.background = 'rgba(255,77,109,.12)';
+    msgDiv.style.color = 'var(--red)';
+    msgDiv.textContent = '⚠ Please fill in all fields.';
+    return;
+  }
+
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  const formData = new FormData();
+  formData.append('name', name);
+  formData.append('email', email);
+  formData.append('message', message);
+
+  try {
+    const resp = await fetch('/contact', { method: 'POST', body: formData });
+    const data = await resp.json();
+    msgDiv.style.display = 'block';
+    if (data.status === 'ok') {
+      msgDiv.style.background = 'rgba(74,222,128,.12)';
+      msgDiv.style.color = 'var(--green)';
+      msgDiv.textContent = '✔ ' + data.msg;
+      document.getElementById('cf-name').value = '';
+      document.getElementById('cf-email').value = '';
+      document.getElementById('cf-message').value = '';
+    } else {
+      msgDiv.style.background = 'rgba(255,77,109,.12)';
+      msgDiv.style.color = 'var(--red)';
+      msgDiv.textContent = '⚠ ' + data.msg;
+    }
+  } catch(e) {
+    msgDiv.style.display = 'block';
+    msgDiv.style.background = 'rgba(255,77,109,.12)';
+    msgDiv.style.color = 'var(--red)';
+    msgDiv.textContent = '⚠ Network error. Please email us directly.';
+  }
+
+  btn.textContent = 'Send Message';
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

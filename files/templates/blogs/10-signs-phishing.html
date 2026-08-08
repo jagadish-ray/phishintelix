@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 Signs of a Phishing Website — PhishIntelix Blog</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:700;color:var(--teal)}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.hero{background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(0,229,255,.07),transparent);padding:60px 24px 40px;text-align:center}
+.tag{display:inline-block;background:rgba(0,229,255,.1);color:var(--teal);border:1px solid rgba(0,229,255,.25);border-radius:100px;padding:5px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:14px}
+.hero p{max-width:620px;margin:0 auto;color:var(--dim);font-size:16px}
+.meta{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+h2{font-size:22px;font-weight:700;margin:40px 0 14px;color:var(--teal)}
+p{color:#cbd5e1;margin-bottom:16px;font-size:15px}
+.sign{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:16px;display:flex;gap:18px;align-items:flex-start}
+.sign-num{background:var(--teal);color:#00131a;font-weight:700;font-size:14px;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.sign-body h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.sign-body p{color:var(--dim);font-size:14px;margin:0}
+.sign-body .ex{font-family:'JetBrains Mono',monospace;font-size:12px;margin-top:8px;color:var(--red);background:rgba(255,77,109,.08);border-radius:6px;padding:6px 10px;display:inline-block}
+.tip-box{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:16px 20px;margin:28px 0}
+.tip-box strong{color:var(--green);display:block;margin-bottom:6px}
+.tip-box p{font-size:14px;margin:0;color:#cbd5e1}
+
+  h1{font-size:22px !important}
+  h2{font-size:18px}
+  p,li{font-size:14px}
+  .code{font-size:11px;padding:10px 12px;overflow-x:auto;word-break:break-all;white-space:pre-wrap}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{padding:7px 10px;font-size:12px;white-space:normal;word-break:break-word}
+  .highlight,.tip,.warn{padding:12px 14px;font-size:13px}
+  .flag-cards,.flag-card{gap:10px}
+  .flag-card{padding:14px}
+  .pattern-grid{grid-template-columns:1fr}
+  .blog-card,.check-card{min-width:100%}
+}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:13px}
+
+@media(max-width:600px){
+  body{font-size:14px}
+  .wrap{padding:20px 14px 50px;max-width:100%}
+  nav{padding:10px 14px}
+  .logo-name{font-size:17px}
+  h1{font-size:20px !important;line-height:1.3}
+  h2{font-size:17px;margin:22px 0 10px}
+  h3{font-size:15px}
+  p{font-size:14px;line-height:1.7}
+  .code{font-size:11px;padding:10px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+  table{display:block;overflow-x:auto;width:100%}
+  th,td{font-size:12px;padding:7px 8px;white-space:normal;word-break:break-word;min-width:80px}
+  .highlight{padding:12px;font-size:13px}
+  .tip,.warn{padding:12px;font-size:13px}
+  .flag-cards{gap:8px}
+  .flag-card{padding:12px;flex-direction:row;gap:10px}
+  .flag-icon{width:34px;height:34px;font-size:16px;flex-shrink:0}
+  .flag-title{font-size:13px}
+  .flag-desc{font-size:13px}
+  .pattern-grid{grid-template-columns:1fr !important}
+  .back{font-size:12px;padding:6px 10px}
+  .meta{font-size:12px}
+  .blog-tag{font-size:11px}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{white-space:normal;word-break:break-word;font-size:12px;padding:7px 8px}
+}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+.hamburger span{display:block;width:20px;height:2px;background:#e2e8f0;border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:#e2e8f0;text-decoration:none}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:#64748b;border:1px solid #1e293b;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:#00e5ff">PhishIntelix</span>
+        <span style="font-size:8px;color:#64748b;letter-spacing:2.5px;font-family:monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+  <a href="/" class="back">← Back to Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+</div>
+<div class="hero">
+  <div class="tag">Guide</div>
+  <h1>10 Signs of a Phishing Website</h1>
+  <p>Quick checks you can do before entering any sensitive information on a website.</p>
+  <div class="meta"><span>📅 2026</span><span>⏱ 5 min read</span><span>🎯 Beginner</span></div>
+</div>
+<div class="wrap">
+  <p>Before you type your password or credit card number into any website, run through this checklist. Phishing sites often have multiple red flags — the more you spot, the more suspicious the site.</p>
+
+  <div class="sign"><div class="sign-num">1</div><div class="sign-body"><h3>Suspicious or Misspelled Domain</h3><p>Check the domain name in the address bar carefully. Attackers use names like paypa1.com, arnazon.com, or apple-id-verify.net to trick you.</p><span class="ex">⚠ paypa1.com instead of paypal.com</span></div></div>
+
+  <div class="sign"><div class="sign-num">2</div><div class="sign-body"><h3>No HTTPS or Padlock</h3><p>Legitimate sites use HTTPS. If the address starts with http:// or your browser shows "Not Secure", do not enter any information.</p><span class="ex">⚠ http://login.yourbank.com</span></div></div>
+
+  <div class="sign"><div class="sign-num">3</div><div class="sign-body"><h3>Unusual or Cheap TLD</h3><p>Phishing sites frequently use cheap or free top-level domains like .xyz, .tk, .top, .cc, or .ml because they are almost free to register.</p><span class="ex">⚠ secure-bank-login.xyz</span></div></div>
+
+  <div class="sign"><div class="sign-num">4</div><div class="sign-body"><h3>Excessive Subdomains</h3><p>Legitimate sites rarely use more than one subdomain. Three or more subdomains is a common trick to make the fake domain appear trustworthy.</p><span class="ex">⚠ secure.login.paypal.verify.xyz</span></div></div>
+
+  <div class="sign"><div class="sign-num">5</div><div class="sign-body"><h3>IP Address as Hostname</h3><p>Real companies never use raw IP addresses as their website address. If you see http://192.168.1.50/login, it is almost certainly malicious.</p><span class="ex">⚠ http://203.45.12.99/paypal/signin</span></div></div>
+
+  <div class="sign"><div class="sign-num">6</div><div class="sign-body"><h3>Urgent or Threatening Language</h3><p>Phishing pages often show alarming messages like "Your account will be deleted in 24 hours!" to rush you into acting without thinking.</p><span class="ex">⚠ "Act immediately or lose access forever!"</span></div></div>
+
+  <div class="sign"><div class="sign-num">7</div><div class="sign-body"><h3>Poor Grammar and Spelling</h3><p>Many phishing pages are created quickly or translated poorly. Look for awkward phrasing, grammar mistakes, or inconsistent fonts.</p><span class="ex">⚠ "Please to verify your informations below."</span></div></div>
+
+  <div class="sign"><div class="sign-num">8</div><div class="sign-body"><h3>Requests for Unusual Information</h3><p>A legitimate bank login only needs your username and password. If the site asks for your PIN, mother's maiden name, or full card number upfront, leave immediately.</p><span class="ex">⚠ Login page asking for SSN + card CVV</span></div></div>
+
+  <div class="sign"><div class="sign-num">9</div><div class="sign-body"><h3>URL Shortener or Redirect</h3><p>Links from bit.ly, tinyurl.com or similar services hide the real destination. Always expand shortened URLs before clicking.</p><span class="ex">⚠ bit.ly/3xKj9z → real URL hidden</span></div></div>
+
+  <div class="sign"><div class="sign-num">10</div><div class="sign-body"><h3>Mismatched or Missing Favicon</h3><p>Phishing sites often forget to copy the favicon (the small icon in the browser tab) or use the wrong one. A missing or generic favicon is a warning sign.</p><span class="ex">⚠ "PayPal" site with a blank or different icon</span></div></div>
+
+  <div class="tip-box">
+    <strong>✅ Quick tip</strong>
+    <p>If you are unsure about a URL, paste it into <a href="/">PhishIntelix</a> before visiting. Our 5-layer scanner checks all of the above automatically in seconds.</p>
+  </div>
+</div>
+<footer>© 2026 PhishIntelix · AI-Powered Phishing Detection · <a href="/">Back to Scanner</a></footer>
+<script>
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');document.body.style.overflow='';}
+</script>
+</body>
+</html>

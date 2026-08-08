@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomy of a Phishing Email — PhishIntelix Blog</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:700;color:var(--teal)}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.hero{background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(248,113,113,.07),transparent);padding:60px 24px 40px;text-align:center}
+.tag{display:inline-block;background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25);border-radius:100px;padding:5px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:14px}
+.hero p{max-width:620px;margin:0 auto;color:var(--dim);font-size:16px}
+.meta{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+h2{font-size:22px;font-weight:700;margin:40px 0 14px;color:var(--teal)}
+h3{font-size:17px;font-weight:600;margin:24px 0 10px}
+p{color:#cbd5e1;margin-bottom:16px;font-size:15px}
+.email-mock{background:var(--panel2);border:1px solid var(--red);border-radius:14px;overflow:hidden;margin:24px 0;box-shadow:0 0 30px rgba(248,113,113,.08)}
+.email-header{background:var(--panel);border-bottom:1px solid var(--border);padding:16px 20px}
+.email-field{display:flex;gap:10px;margin-bottom:6px;font-size:13px;align-items:flex-start}
+.email-field:last-child{margin:0}
+.ef-label{color:var(--dim);width:64px;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:12px;padding-top:1px}
+.ef-val{color:#cbd5e1;font-family:'JetBrains Mono',monospace;font-size:12px}
+.ef-bad{color:var(--red)}
+.tag-inline{display:inline-block;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.3);border-radius:4px;padding:1px 7px;font-size:10px;color:var(--red);margin-left:6px;vertical-align:middle;font-family:'Space Grotesk',monospace}
+.email-body{padding:20px;font-size:13px;color:#cbd5e1;line-height:2;font-family:'JetBrains Mono',monospace}
+.part{position:relative;border-left:3px solid transparent;padding-left:12px;margin:4px 0}
+.part.p1{border-color:var(--amber)}.part.p2{border-color:var(--red)}.part.p3{border-color:#a855f7}.part.p4{border-color:var(--teal)}.part.p5{border-color:#fb923c}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:24px 0}
+.legend-item{display:flex;gap:10px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.leg-bar{width:4px;border-radius:2px;flex-shrink:0;align-self:stretch;min-height:40px}
+.leg-bar.c1{background:var(--amber)}.leg-bar.c2{background:var(--red)}.leg-bar.c3{background:#a855f7}.leg-bar.c4{background:var(--teal)}.leg-bar.c5{background:#fb923c}
+.leg-body h4{font-size:13px;font-weight:600;margin-bottom:4px}
+.leg-body p{font-size:12px;color:var(--dim);margin:0}
+.checklist{list-style:none;margin:16px 0;display:flex;flex-direction:column;gap:10px}
+.checklist li{display:flex;gap:10px;font-size:14px;color:#cbd5e1;align-items:flex-start}
+.checklist li .ci{font-size:16px;flex-shrink:0}
+.pattern-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13px}
+.pattern-table th{background:var(--teal);color:#00131a;padding:10px 14px;text-align:left;font-weight:600}
+.pattern-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:#cbd5e1}
+.pattern-table tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.pattern-table td:first-child{color:var(--amber);font-weight:600;font-size:12px}
+.future-box{background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.2);border-radius:12px;padding:20px 24px;margin:32px 0}
+.future-box strong{color:var(--teal);font-size:15px;display:block;margin-bottom:8px}
+.future-box p{font-size:14px;color:var(--dim);margin:0}
+
+  h1{font-size:22px !important}
+  h2{font-size:18px}
+  p,li{font-size:14px}
+  .code{font-size:11px;padding:10px 12px;overflow-x:auto;word-break:break-all;white-space:pre-wrap}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{padding:7px 10px;font-size:12px;white-space:normal;word-break:break-word}
+  .highlight,.tip,.warn{padding:12px 14px;font-size:13px}
+  .flag-cards,.flag-card{gap:10px}
+  .flag-card{padding:14px}
+  .pattern-grid{grid-template-columns:1fr}
+  .blog-card,.check-card{min-width:100%}
+}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:13px}
+
+@media(max-width:600px){
+  body{font-size:14px}
+  .wrap{padding:20px 14px 50px;max-width:100%}
+  nav{padding:10px 14px}
+  .logo-name{font-size:17px}
+  h1{font-size:20px !important;line-height:1.3}
+  h2{font-size:17px;margin:22px 0 10px}
+  h3{font-size:15px}
+  p{font-size:14px;line-height:1.7}
+  .code{font-size:11px;padding:10px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+  table{display:block;overflow-x:auto;width:100%}
+  th,td{font-size:12px;padding:7px 8px;white-space:normal;word-break:break-word;min-width:80px}
+  .highlight{padding:12px;font-size:13px}
+  .tip,.warn{padding:12px;font-size:13px}
+  .flag-cards{gap:8px}
+  .flag-card{padding:12px;flex-direction:row;gap:10px}
+  .flag-icon{width:34px;height:34px;font-size:16px;flex-shrink:0}
+  .flag-title{font-size:13px}
+  .flag-desc{font-size:13px}
+  .pattern-grid{grid-template-columns:1fr !important}
+  .back{font-size:12px;padding:6px 10px}
+  .meta{font-size:12px}
+  .blog-tag{font-size:11px}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{white-space:normal;word-break:break-word;font-size:12px;padding:7px 8px}
+}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+.hamburger span{display:block;width:20px;height:2px;background:#e2e8f0;border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:#e2e8f0;text-decoration:none}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:#64748b;border:1px solid #1e293b;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:#00e5ff">PhishIntelix</span>
+        <span style="font-size:8px;color:#64748b;letter-spacing:2.5px;font-family:monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+  <a href="/" class="back">← Back to Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+</div>
+
+<div class="hero">
+  <div class="tag">Email Security</div>
+  <h1>Anatomy of a Phishing Email</h1>
+  <p>A dissected look at every component attackers craft to make phishing emails convincing — and how ML will detect them.</p>
+  <div class="meta"><span>📅 2026</span><span>⏱ 7 min read</span><span>🎯 Intermediate</span></div>
+</div>
+
+<div class="wrap">
+
+  <h2>The Complete Phishing Email — Dissected</h2>
+  <p>Every part of a phishing email is carefully crafted. Below is a real-world-style example with every component colour-coded and explained.</p>
+
+  <div class="email-mock">
+    <div class="email-header">
+      <div class="email-field"><span class="ef-label">From:</span><span class="ef-val ef-bad">"Microsoft Account Team" &lt;noreply@microsofft-security.com&gt;<span class="tag-inline">⚠ FAKE DOMAIN</span></span></div>
+      <div class="email-field"><span class="ef-label">Subject:</span><span class="ef-val ef-bad">🔒 Unusual sign-in activity detected on your account<span class="tag-inline">⚠ FEAR TRIGGER</span></span></div>
+      <div class="email-field"><span class="ef-label">To:</span><span class="ef-val">victim@gmail.com</span></div>
+    </div>
+    <div class="email-body">
+<div class="part p1">Dear Microsoft User,<span class="tag-inline" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3);color:var(--amber)">⚠ GENERIC GREETING</span></div>
+<br>
+<div class="part p2">We detected a sign-in attempt to your Microsoft account
+from an unrecognised device in Russia (Moscow).
+If this wasn't you, your account may be compromised.<span class="tag-inline">⚠ FEAR + FALSE URGENCY</span></div>
+<br>
+<div class="part p3">To secure your account, you must verify your identity
+within 12 hours or your account will be permanently locked.<span class="tag-inline" style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.3);color:#c084fc">⚠ TIME PRESSURE + THREAT</span></div>
+<br>
+<div class="part p4">→ Verify My Account Now<span class="tag-inline" style="background:rgba(0,229,255,.1);border-color:rgba(0,229,255,.3);color:var(--teal)">⚠ MASKED LINK → evil-site.xyz</span></div>
+<br>
+<div class="part p5">Microsoft Security Team
+© 2026 Microsoft Corporation
+One Microsoft Way, Redmond, WA<span class="tag-inline" style="background:rgba(251,146,60,.1);border-color:rgba(251,146,60,.3);color:#fb923c">⚠ FAKE LEGITIMACY</span></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="leg-bar c1"></div><div class="leg-body"><h4>Generic Greeting</h4><p>Real companies address you by your full name. "Dear User" or "Dear Customer" signals a mass phishing blast.</p></div></div>
+    <div class="legend-item"><div class="leg-bar c2"></div><div class="leg-body"><h4>Fear Trigger</h4><p>False claim of account compromise, suspicious location, or unauthorized access to activate your fight-or-flight response.</p></div></div>
+    <div class="legend-item"><div class="leg-bar c3"></div><div class="leg-body"><h4>Time Pressure + Threat</h4><p>"12 hours", "permanently locked" — designed to stop rational thinking and force immediate action.</p></div></div>
+    <div class="legend-item"><div class="leg-bar c4"></div><div class="leg-body"><h4>Masked Phishing Link</h4><p>Button text says "Verify My Account" but the actual href points to a completely different malicious domain.</p></div></div>
+    <div class="legend-item"><div class="leg-bar c5"></div><div class="leg-body"><h4>Fake Legitimacy Footer</h4><p>Copied company address, copyright, and branding from the real company to appear official.</p></div></div>
+  </div>
+
+  <h2>Social Engineering Keyword Patterns</h2>
+  <p>Machine learning models trained to detect phishing emails scan for clusters of these patterns. The more that appear together, the higher the phishing probability.</p>
+
+  <table class="pattern-table">
+    <thead><tr><th>Category</th><th>Example Keywords</th><th>Why It Works</th></tr></thead>
+    <tbody>
+      <tr><td>Urgency</td><td>within 24 hours, immediately, expires today, act now</td><td>Bypasses rational thinking, forces quick action</td></tr>
+      <tr><td>Threat</td><td>suspended, locked, terminated, permanently closed</td><td>Fear of losing access overrides skepticism</td></tr>
+      <tr><td>Authority</td><td>security team, official notice, legal action, government</td><td>People comply with authority figures</td></tr>
+      <tr><td>Reward</td><td>you have won, selected, claim your prize, free gift</td><td>Greed bypasses caution</td></tr>
+      <tr><td>Verification</td><td>verify your identity, confirm your details, update now</td><td>Makes credential theft seem routine</td></tr>
+      <tr><td>Curiosity</td><td>someone shared a file, you have a new message, your package</td><td>Natural curiosity triggers clicks</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Hidden Techniques in HTML Emails</h2>
+  <h3>Anchor Text Mismatch</h3>
+  <p>The most common technique — the visible link text says one thing, the actual href goes somewhere else entirely:</p>
+  <div style="background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:13px;margin:14px 0;line-height:2">
+    Visible: <span style="color:var(--teal)">https://microsoft.com/account/verify</span><br>
+    Actual:  <span style="color:var(--red)">&lt;a href="http://microsofft-phish.xyz/steal"&gt;https://microsoft.com/account/verify&lt;/a&gt;</span>
+  </div>
+
+  <h3>Zero-Width Characters</h3>
+  <p>Attackers insert invisible Unicode characters (zero-width spaces, soft hyphens) inside URLs or email addresses to bypass keyword filters while remaining invisible to the human reader.</p>
+
+  <h3>Image-Only Emails</h3>
+  <p>Some phishing emails contain only a single image (a screenshot of a fake invoice or alert) with no text at all — bypassing text-based spam filters. The entire image is one clickable link.</p>
+
+  <h2>What ML Email Detection Will Check</h2>
+  <ul class="checklist">
+    <li><span class="ci">🔍</span>Sender domain vs display name mismatch</li>
+    <li><span class="ci">📊</span>Keyword frequency scoring across all 6 social engineering categories</li>
+    <li><span class="ci">🔗</span>All href links extracted and scanned for phishing indicators</li>
+    <li><span class="ci">🔒</span>SPF / DKIM / DMARC authentication result parsing</li>
+    <li><span class="ci">📎</span>Attachment extension checking (.exe, .bat, .js, .vbs etc.)</li>
+    <li><span class="ci">🔤</span>Zero-width and invisible character detection</li>
+    <li><span class="ci">🖼</span>Image-only email detection (no meaningful text content)</li>
+    <li><span class="ci">🌐</span>All embedded URLs fed through the PhishIntelix URL scanner</li>
+  </ul>
+
+  <div class="future-box">
+    <strong>🔮 Email Scanner — Coming to PhishIntelix</strong>
+    <p>Paste your full email content (body + headers) into PhishIntelix and get an instant phishing risk score with a breakdown of every suspicious pattern detected. All the checks above will be automated. Stay tuned for the launch!</p>
+  </div>
+
+</div>
+<footer>© 2026 PhishIntelix · AI-Powered Phishing Detection · <a href="/">Back to Scanner</a></footer>
+<script>
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');document.body.style.overflow='';}
+</script>
+</body>
+</html>

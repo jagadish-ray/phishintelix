@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How ML Detects Phishing URLs — PhishIntelix Blog</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:700;color:var(--teal)}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.hero{background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(74,222,128,.07),transparent);padding:60px 24px 40px;text-align:center}
+.tag{display:inline-block;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25);border-radius:100px;padding:5px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:14px}
+.hero p{max-width:620px;margin:0 auto;color:var(--dim);font-size:16px}
+.meta{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+h2{font-size:22px;font-weight:700;margin:40px 0 14px;color:var(--teal)}
+h3{font-size:17px;font-weight:600;margin:24px 0 10px}
+p{color:#cbd5e1;margin-bottom:16px;font-size:15px}
+.callout{background:var(--panel);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;font-size:14px;color:var(--dim)}
+.callout strong{color:var(--text);display:block;margin-bottom:4px}
+.feat-table{width:100%;border-collapse:collapse;margin:24px 0;font-size:14px}
+.feat-table th{background:var(--teal);color:#00131a;padding:10px 14px;text-align:left;font-weight:600}
+.feat-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:#cbd5e1}
+.feat-table tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.feat-table td:first-child{font-family:'JetBrains Mono',monospace;color:var(--teal);font-size:12px}
+.model-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:24px 0}
+.model-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px}
+.model-card h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.model-card p{font-size:13px;color:var(--dim);margin:0}
+.model-card .score{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:var(--green);margin-bottom:6px}
+.pipeline{display:flex;align-items:center;gap:0;margin:24px 0;flex-wrap:wrap}
+.pipe-step{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:13px;flex:1;min-width:120px;text-align:center}
+.pipe-step strong{display:block;color:var(--teal);font-size:12px;margin-bottom:4px;font-family:'JetBrains Mono',monospace}
+.pipe-arrow{color:var(--dim);font-size:20px;padding:0 6px}
+
+  h1{font-size:22px !important}
+  h2{font-size:18px}
+  p,li{font-size:14px}
+  .code{font-size:11px;padding:10px 12px;overflow-x:auto;word-break:break-all;white-space:pre-wrap}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{padding:7px 10px;font-size:12px;white-space:normal;word-break:break-word}
+  .highlight,.tip,.warn{padding:12px 14px;font-size:13px}
+  .flag-cards,.flag-card{gap:10px}
+  .flag-card{padding:14px}
+  .pattern-grid{grid-template-columns:1fr}
+  .blog-card,.check-card{min-width:100%}
+}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:13px}
+
+@media(max-width:600px){
+  body{font-size:14px}
+  .wrap{padding:20px 14px 50px;max-width:100%}
+  nav{padding:10px 14px}
+  .logo-name{font-size:17px}
+  h1{font-size:20px !important;line-height:1.3}
+  h2{font-size:17px;margin:22px 0 10px}
+  h3{font-size:15px}
+  p{font-size:14px;line-height:1.7}
+  .code{font-size:11px;padding:10px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+  table{display:block;overflow-x:auto;width:100%}
+  th,td{font-size:12px;padding:7px 8px;white-space:normal;word-break:break-word;min-width:80px}
+  .highlight{padding:12px;font-size:13px}
+  .tip,.warn{padding:12px;font-size:13px}
+  .flag-cards{gap:8px}
+  .flag-card{padding:12px;flex-direction:row;gap:10px}
+  .flag-icon{width:34px;height:34px;font-size:16px;flex-shrink:0}
+  .flag-title{font-size:13px}
+  .flag-desc{font-size:13px}
+  .pattern-grid{grid-template-columns:1fr !important}
+  .back{font-size:12px;padding:6px 10px}
+  .meta{font-size:12px}
+  .blog-tag{font-size:11px}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{white-space:normal;word-break:break-word;font-size:12px;padding:7px 8px}
+}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+.hamburger span{display:block;width:20px;height:2px;background:#e2e8f0;border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:#e2e8f0;text-decoration:none}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:#64748b;border:1px solid #1e293b;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:#00e5ff">PhishIntelix</span>
+        <span style="font-size:8px;color:#64748b;letter-spacing:2.5px;font-family:monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+  <a href="/" class="back">← Back to Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+</div>
+<div class="hero">
+  <div class="tag">Technical</div>
+  <h1>How ML Detects Phishing URLs</h1>
+  <p>From raw URL strings to ensemble classifiers — the intelligence behind automated phishing detection.</p>
+  <div class="meta"><span>📅 2026</span><span>⏱ 8 min read</span><span>🎯 Technical</span></div>
+</div>
+<div class="wrap">
+
+  <h2>The Challenge</h2>
+  <p>Humans can sometimes spot a phishing URL — but attackers create thousands of new ones every day. Manual review is impossible. Machine learning models can analyse a URL in milliseconds and flag threats automatically, 24/7.</p>
+
+  <h2>Step 1 — Feature Extraction</h2>
+  <p>A raw URL is a string of text. ML models need numbers. We convert each URL into a vector of numeric features that capture its structural properties.</p>
+
+  <table class="feat-table">
+    <thead><tr><th>Feature</th><th>Description</th><th>Phishing Signal</th></tr></thead>
+    <tbody>
+      <tr><td>length</td><td>Total length of the URL authority (scheme + host)</td><td>Phishing URLs tend to be longer</td></tr>
+      <tr><td>dots</td><td>Number of dots in the hostname</td><td>More dots = more subdomains = suspicious</td></tr>
+      <tr><td>https</td><td>1 if HTTPS, 0 if HTTP</td><td>No HTTPS is a strong red flag</td></tr>
+      <tr><td>has_ip</td><td>1 if hostname is a raw IP address</td><td>Legitimate sites use domain names</td></tr>
+      <tr><td>has_at</td><td>1 if @ symbol present in authority</td><td>Browsers ignore everything before @</td></tr>
+      <tr><td>subdomains</td><td>Number of subdomain levels</td><td>3+ subdomains is suspicious</td></tr>
+      <tr><td>suspicious_word</td><td>1 if URL contains login/verify/secure etc.</td><td>Phishing pages mimic legitimate actions</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Step 2 — The ML Pipeline</h2>
+  <div class="pipeline">
+    <div class="pipe-step"><strong>Raw URL</strong>Input string</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><strong>Feature Extractor</strong>7 numeric features</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><strong>StandardScaler</strong>Normalize values</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><strong>Classifier</strong>Predict probability</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><strong>Verdict</strong>Safe / Phishing</div>
+  </div>
+
+  <h2>Step 3 — Comparing 6 Algorithms</h2>
+  <p>PhishIntelix trained and evaluated 6 different classification algorithms on a labelled dataset and selected the best performer automatically.</p>
+
+  <div class="model-grid">
+    <div class="model-card"><div class="score">98.4%</div><h4>Decision Tree ★</h4><p>Best F1 score. Fast, interpretable, handles non-linear patterns well.</p></div>
+    <div class="model-card"><div class="score">98.4%</div><h4>Gradient Boosting</h4><p>Ensemble of weak learners. Highest ROC-AUC (99.8%) but slightly slower.</p></div>
+    <div class="model-card"><div class="score">97.9%</div><h4>Random Forest</h4><p>Robust ensemble. Zero false positives on safe URLs in test set.</p></div>
+    <div class="model-card"><div class="score">97.9%</div><h4>SVM (RBF)</h4><p>Strong on high-dimensional data. Good generalisation.</p></div>
+    <div class="model-card"><div class="score">98.4%</div><h4>KNN (k=7)</h4><p>Simple distance-based classifier. Surprisingly effective on this dataset.</p></div>
+    <div class="model-card"><div class="score">93.5%</div><h4>Logistic Regression</h4><p>Linear model. Lower accuracy confirms the relationship is non-linear.</p></div>
+  </div>
+
+  <div class="callout">
+    <strong>Key finding</strong>
+    Logistic Regression's noticeably lower accuracy (93.5% vs ~98%) confirms that phishing URL patterns are not linearly separable — tree-based and kernel methods are necessary for high accuracy.
+  </div>
+
+  <h2>Step 4 — Hybrid Scoring</h2>
+  <p>The ML probability alone isn't enough. PhishIntelix combines the model score with a heuristic layer — 10+ rule-based checks including typosquatting detection, TLD analysis, URL shortener detection, and live SSL verification.</p>
+  <p>The final risk score formula:</p>
+  <div style="background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:14px;margin:16px 0">
+    final_score = min(ml_score × 0.7 + heuristic_score, 1.0)
+  </div>
+  <p>This hybrid approach means a URL with zero heuristic flags can't be pushed into "Phishing" territory by the ML model alone — reducing false positives on unusual but legitimate domains.</p>
+
+</div>
+<footer>© 2026 PhishIntelix · AI-Powered Phishing Detection · <a href="/">Back to Scanner</a></footer>
+<script>
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');document.body.style.overflow='';}
+</script>
+</body>
+</html>

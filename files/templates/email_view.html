@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<title>Email View — PhishIntelix</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:10px}
+.logo img{height:40px;width:40px;object-fit:contain;border-radius:8px}
+.logo-text{display:flex;flex-direction:column;line-height:1.2}
+.logo-name{font-size:20px;font-weight:700;color:var(--teal)}
+.logo-tag{font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.wrap{max-width:860px;margin:40px auto;padding:0 24px 80px}
+.page-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.page-title{font-size:28px;font-weight:700;letter-spacing:-.5px;margin-bottom:24px}
+.meta-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+.meta-head{padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:0}
+.meta-item{padding:14px 20px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.meta-item:last-child{border-right:none}
+.meta-label{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.meta-value{font-size:14px;font-weight:600}
+.verdict-badge{display:inline-block;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.badge-safe{background:rgba(74,222,128,.12);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+.badge-suspicious{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+.badge-phishing{background:rgba(255,77,109,.12);color:var(--red);border:1px solid rgba(255,77,109,.25)}
+.body-panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.body-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.body-head span{font-size:13px;font-weight:600;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.copy-btn{background:var(--teal);color:#00131a;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:.2s}
+.copy-btn:hover{filter:brightness(1.1)}
+.email-body-text{padding:24px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;color:#cbd5e1;white-space:pre-wrap;word-break:break-word;max-height:600px;overflow-y:auto;border-bottom:1px solid var(--border)}
+.rescan-btn{display:block;text-align:center;padding:14px;font-size:14px;font-weight:600;color:var(--teal);transition:.2s}
+.rescan-btn:hover{background:rgba(0,229,255,.05)}
+footer{text-align:center;padding:28px;border-top:1px solid var(--border);color:var(--dim);font-size:13px;margin-top:40px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <img src="/static/logo.png" alt="PhishIntelix">
+    <div class="logo-text">
+      <span class="logo-name">PhishIntelix</span>
+      <span class="logo-tag">DETECT · ANALYZE · PROTECT</span>
+    </div>
+  </div>
+  <a href="/history" class="back">← Back to History</a>
+</nav>
+
+<div class="wrap">
+  <div class="page-tag">📧 Email Record</div>
+  <div class="page-title">Scanned Email Details</div>
+
+  <div class="meta-panel">
+    <div class="meta-head">📋 scan_metadata.json</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <div class="meta-label">Sender</div>
+        <div class="meta-value" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)">{{ record.sender or 'Not provided' }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Verdict</div>
+        <div class="meta-value">
+          <span class="verdict-badge badge-{{ record.verdict }}">{{ record.label }}</span>
+        </div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Risk Score</div>
+        <div class="meta-value" style="color:{% if record.verdict == 'phishing' %}var(--red){% elif record.verdict == 'suspicious' %}var(--amber){% else %}var(--green){% endif %}">{{ record.score }}%</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">HIGH Findings</div>
+        <div class="meta-value" style="color:var(--red)">{{ record.high }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">MEDIUM Findings</div>
+        <div class="meta-value" style="color:var(--amber)">{{ record.medium }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Scanned At</div>
+        <div class="meta-value" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim)">{{ record.timestamp }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="body-panel">
+    <div class="body-head">
+      <span>📄 email_body.txt</span>
+      <button class="copy-btn" onclick="copyBody()">Copy Body</button>
+    </div>
+    <div class="email-body-text" id="emailBody">{{ record.email_body or 'Email body not saved.' }}</div>
+    <a href="/email-scanner" class="rescan-btn">⚡ Scan Another Email →</a>
+  </div>
+</div>
+
+<footer>© {{ cfg.COPYRIGHT_YEAR }} {{ cfg.SITE_NAME }} · Built with ❤️ by {{ cfg.AUTHOR_NAME }}</footer>
+
+<script>
+function copyBody() {
+  const text = document.getElementById('emailBody').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy Body', 2000);
+  });
+}
+</script>
+</body>
+</html>

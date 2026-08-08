@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What Is a Phishing Attack? — PhishIntelix Blog</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+a{color:var(--teal);text-decoration:none}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:700;color:var(--teal)}
+.back{font-size:13px;color:var(--dim);border:1px solid var(--border);border-radius:8px;padding:7px 14px;transition:.2s}
+.back:hover{color:var(--teal);border-color:var(--teal)}
+.hero{background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(248,113,113,.08),transparent);padding:60px 24px 40px;text-align:center}
+.tag{display:inline-block;background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.3);border-radius:100px;padding:5px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:14px}
+.hero p{max-width:620px;margin:0 auto;color:var(--dim);font-size:16px}
+.meta{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.wrap{max-width:780px;margin:0 auto;padding:40px 24px 80px}
+h2{font-size:22px;font-weight:700;margin:40px 0 14px;color:var(--teal)}
+h3{font-size:17px;font-weight:600;margin:28px 0 10px}
+p{color:#cbd5e1;margin-bottom:16px;font-size:15px}
+.callout{background:var(--panel);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;font-size:14px;color:var(--dim)}
+.callout strong{color:var(--text);display:block;margin-bottom:4px}
+.warn-box{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:16px 20px;margin:24px 0}
+.warn-box strong{color:var(--red)}
+.example{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:20px;margin:24px 0;font-family:'JetBrains Mono',monospace;font-size:13px}
+.example .label{font-size:11px;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.step-list{counter-reset:steps;list-style:none;margin:16px 0 24px}
+.step-list li{counter-increment:steps;display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step-list li::before{content:counter(steps);background:var(--teal);color:#00131a;font-weight:700;font-size:13px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-list li span{color:#cbd5e1;font-size:15px}
+.img-placeholder{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:14px;height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:24px 0;gap:10px}
+.img-placeholder .icon{font-size:52px}
+.img-placeholder p{color:var(--dim);font-size:13px;margin:0}
+.type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin:24px 0}
+.type-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
+.type-card .ti{font-size:26px;margin-bottom:10px}
+.type-card h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.type-card p{font-size:13px;color:var(--dim);margin:0}
+
+  h1{font-size:22px !important}
+  h2{font-size:18px}
+  p,li{font-size:14px}
+  .code{font-size:11px;padding:10px 12px;overflow-x:auto;word-break:break-all;white-space:pre-wrap}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{padding:7px 10px;font-size:12px;white-space:normal;word-break:break-word}
+  .highlight,.tip,.warn{padding:12px 14px;font-size:13px}
+  .flag-cards,.flag-card{gap:10px}
+  .flag-card{padding:14px}
+  .pattern-grid{grid-template-columns:1fr}
+  .blog-card,.check-card{min-width:100%}
+}
+footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:13px}
+
+@media(max-width:600px){
+  body{font-size:14px}
+  .wrap{padding:20px 14px 50px;max-width:100%}
+  nav{padding:10px 14px}
+  .logo-name{font-size:17px}
+  h1{font-size:20px !important;line-height:1.3}
+  h2{font-size:17px;margin:22px 0 10px}
+  h3{font-size:15px}
+  p{font-size:14px;line-height:1.7}
+  .code{font-size:11px;padding:10px;overflow-x:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6}
+  table{display:block;overflow-x:auto;width:100%}
+  th,td{font-size:12px;padding:7px 8px;white-space:normal;word-break:break-word;min-width:80px}
+  .highlight{padding:12px;font-size:13px}
+  .tip,.warn{padding:12px;font-size:13px}
+  .flag-cards{gap:8px}
+  .flag-card{padding:12px;flex-direction:row;gap:10px}
+  .flag-icon{width:34px;height:34px;font-size:16px;flex-shrink:0}
+  .flag-title{font-size:13px}
+  .flag-desc{font-size:13px}
+  .pattern-grid{grid-template-columns:1fr !important}
+  .back{font-size:12px;padding:6px 10px}
+  .meta{font-size:12px}
+  .blog-tag{font-size:11px}
+  .result-table{display:block;overflow-x:auto}
+  .result-table th,.result-table td{white-space:normal;word-break:break-word;font-size:12px;padding:7px 8px}
+}
+
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px}
+.hamburger span{display:block;width:20px;height:2px;background:#e2e8f0;border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:#e2e8f0;text-decoration:none}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:#64748b;border:1px solid #1e293b;border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+@media(max-width:768px){.hamburger{display:flex}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+      <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+        <span style="font-size:24px;font-weight:700;color:#00e5ff">PhishIntelix</span>
+        <span style="font-size:8px;color:#64748b;letter-spacing:2.5px;font-family:monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+      </div>
+    </div>
+  <a href="/" class="back">← Back to Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+</div>
+
+<div class="hero">
+  <div class="tag">Basics</div>
+  <h1>What Is a Phishing Attack?</h1>
+  <p>How cybercriminals impersonate trusted organisations to steal your credentials, money, and identity — and how to spot them.</p>
+  <div class="meta"><span>📅 2026</span><span>⏱ 6 min read</span><span>🎯 Beginner</span></div>
+</div>
+
+<div class="wrap">
+
+  <h2>Definition</h2>
+  <p>A <strong>phishing attack</strong> is a type of social engineering where an attacker disguises themselves as a trusted entity — a bank, a tech company, a government body — to trick a victim into revealing sensitive information such as passwords, credit card numbers, or personal details.</p>
+
+  <div class="callout">
+    <strong>Origin of the name</strong>
+    The term "phishing" is a deliberate misspelling of "fishing" — attackers cast a wide net (mass emails or fake sites) hoping victims will "take the bait."
+  </div>
+
+  <h2>How a Phishing Attack Works</h2>
+  <ol class="step-list">
+    <li><span><strong>The Lure:</strong> The attacker sends a convincing email, SMS, or social media message that appears to come from a trusted source like PayPal, your bank, or Google.</span></li>
+    <li><span><strong>The Hook:</strong> The message creates urgency — "Your account has been suspended!", "Verify your identity within 24 hours!" — pushing the victim to act without thinking.</span></li>
+    <li><span><strong>The Fake Page:</strong> The link leads to a cloned website that looks identical to the real one. The victim enters their credentials.</span></li>
+    <li><span><strong>The Catch:</strong> Credentials are sent directly to the attacker's server. The victim is often redirected to the real site to avoid suspicion.</span></li>
+  </ol>
+
+  <div class="img-placeholder"><div class="icon">🎣</div><p>Phishing attack flow: Email → Fake Site → Credential Theft</p></div>
+
+  <h2>Types of Phishing</h2>
+  <div class="type-grid">
+    <div class="type-card"><div class="ti">📧</div><h4>Email Phishing</h4><p>Mass emails sent to thousands of addresses impersonating banks, services, or governments.</p></div>
+    <div class="type-card"><div class="ti">🎯</div><h4>Spear Phishing</h4><p>Targeted attack on a specific person or organisation using personalised information.</p></div>
+    <div class="type-card"><div class="ti">🐋</div><h4>Whaling</h4><p>Spear phishing aimed at high-profile targets like CEOs, CFOs, or government officials.</p></div>
+    <div class="type-card"><div class="ti">📱</div><h4>Smishing</h4><p>Phishing via SMS — fake delivery alerts, bank OTP requests, or prize notifications.</p></div>
+    <div class="type-card"><div class="ti">📞</div><h4>Vishing</h4><p>Voice phishing — attackers call pretending to be tech support, banks, or the IRS.</p></div>
+    <div class="type-card"><div class="ti">🔍</div><h4>Search Engine Phishing</h4><p>Fake websites appear in search results for terms like "bank login" or "PayPal signin".</p></div>
+  </div>
+
+  <h2>Real-World Example</h2>
+  <div class="example">
+    <div class="label">Fake Email Example</div>
+    From: security-alert@paypa1-support.com<br>
+    Subject: ⚠️ Your PayPal account has been LIMITED<br><br>
+    Dear Customer,<br><br>
+    We have noticed unusual activity on your account. Your access has been<br>
+    temporarily limited. Please verify your identity within 24 hours to<br>
+    avoid permanent suspension.<br><br>
+    → Click here to verify: http://paypal-secure-login.xyz/verify
+  </div>
+
+  <div class="warn-box">
+    <strong>🚩 Red flags in this example:</strong>
+    <p style="margin:8px 0 0;font-size:14px">Sender domain is <code>paypa1-support.com</code> (note the "1" instead of "l") · Urgent threatening language · Link goes to <code>paypal-secure-login.xyz</code> not <code>paypal.com</code> · Generic greeting "Dear Customer"</p>
+  </div>
+
+  <h2>How to Protect Yourself</h2>
+  <p>✅ Always check the sender's email domain carefully before clicking any link.</p>
+  <p>✅ Hover over links before clicking — the real destination shows in the status bar.</p>
+  <p>✅ Enable two-factor authentication (2FA) on all important accounts.</p>
+  <p>✅ When in doubt, go directly to the website by typing it in your browser.</p>
+  <p>✅ Use a phishing detection tool like <a href="/">PhishIntelix</a> to scan suspicious URLs before visiting.</p>
+
+</div>
+<footer>© 2026 PhishIntelix · AI-Powered Phishing Detection · <a href="/">Back to Scanner</a></footer>
+<script>
+function openMobileMenu(){document.getElementById('mobileMenu').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileMenu(){document.getElementById('mobileMenu').classList.remove('open');document.body.style.overflow='';}
+</script>
+</body>
+</html>

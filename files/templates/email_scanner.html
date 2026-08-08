@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="/static/logo.png">
+<title>Email Scanner — PhishIntelix</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060b14;--panel:#0d1525;--panel2:#111827;--border:#1e293b;--text:#e2e8f0;--dim:#64748b;--teal:#00e5ff;--green:#4ade80;--red:#ff4d6d;--amber:#fbbf24;--orange:#fb923c}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+nav{background:rgba(6,11,20,.95);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{font-size:20px;font-weight:700;color:var(--teal);display:flex;align-items:center;gap:10px}
+.logo img{height:52px;width:52px;object-fit:contain;border-radius:10px}
+.logo-text{display:flex;flex-direction:column;line-height:1.2;gap:1px}
+.logo-name{font-size:24px;font-weight:700;color:var(--teal)}
+.logo-tag{font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace;font-weight:400}
+.nav-links{display:flex;gap:24px;font-size:14px;color:var(--dim)}
+.nav-links a:hover{color:var(--teal);transition:.2s}
+.nav-links a.active{color:var(--teal)}
+.nav-cta{background:var(--teal);color:#00131a;padding:9px 20px;border-radius:8px;font-weight:600;font-size:14px}
+.nav-cta:hover{filter:brightness(1.1)}
+
+/* HERO */
+.hero{padding:60px 24px 44px;text-align:center;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(251,146,60,.08),transparent)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(251,146,60,.1);color:var(--orange);border:1px solid rgba(251,146,60,.25);border-radius:100px;padding:6px 16px;font-size:12px;font-family:'JetBrains Mono',monospace;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1px;margin-bottom:12px}
+.hero h1 span{color:var(--orange)}
+.hero p{max-width:600px;margin:0 auto;color:var(--dim);font-size:16px;line-height:1.7}
+
+/* WHAT WE CHECK */
+.checks-section{max-width:1100px;margin:0 auto;padding:0 24px 48px}
+.section-tag{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.section-title{font-size:26px;font-weight:700;letter-spacing:-.5px;margin-bottom:28px}
+.checks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.check-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;transition:.2s}
+.check-card:hover{border-color:rgba(251,146,60,.3);transform:translateY(-2px)}
+.check-icon{width:42px;height:42px;border-radius:10px;background:rgba(251,146,60,.1);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px}
+.check-card h3{font-size:14px;font-weight:600;margin-bottom:6px}
+.check-card p{color:var(--dim);font-size:13px;line-height:1.6;margin:0}
+
+/* SCAN INPUT */
+.scan-wrap{max-width:860px;margin:0 auto;padding:0 24px 40px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px}
+.panel-head{padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:8px}
+.panel-body{padding:22px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;color:var(--dim);margin-bottom:6px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.cf-input{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:.2s;resize:vertical}
+.cf-input:focus{border-color:var(--orange)}
+.cf-input.ta{height:200px}
+.scan-btn{width:100%;background:var(--teal);color:#00131a;border:none;border-radius:10px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Space Grotesk',sans-serif;letter-spacing:.04em;transition:.2s;margin-top:4px}
+.scan-btn:hover{filter:brightness(1.1)}
+.hint{font-size:12px;color:var(--dim);margin-top:10px;font-family:'JetBrains Mono',monospace;line-height:1.7}
+
+/* RESULT */
+.result-header{display:flex;align-items:center;gap:20px;padding:22px 20px;border-bottom:1px solid var(--border)}
+.gauge-wrap{flex-shrink:0;width:94px;height:94px;position:relative}
+.gauge-wrap svg{transform:rotate(-90deg)}
+.gauge-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace}
+.gauge-pct{font-size:21px;font-weight:700}
+.gauge-sub{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.result-meta{flex:1;min-width:0}
+.verdict-text{font-size:20px;font-weight:700;margin-bottom:4px}
+.verdict-sender{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim);margin-bottom:10px;word-break:break-all}
+.sev-pills{display:flex;gap:8px;flex-wrap:wrap}
+.sev-pill{font-family:'JetBrains Mono',monospace;font-size:11px;border-radius:6px;padding:3px 10px;font-weight:600}
+.sev-high{background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)}
+.sev-med{background:rgba(251,191,36,.12);color:var(--amber);border:1px solid rgba(251,191,36,.3)}
+.sev-info{background:rgba(100,116,139,.12);color:var(--dim);border:1px solid rgba(100,116,139,.2)}
+.c-safe{color:var(--green)}.c-suspicious{color:var(--amber)}.c-phishing{color:var(--red)}
+.stroke-safe{stroke:var(--green)}.stroke-suspicious{stroke:var(--amber)}.stroke-phishing{stroke:var(--red)}
+
+/* FINDINGS */
+.findings-body{padding:6px 0}
+.finding-cat{padding:10px 20px 4px;font-size:11px;font-weight:600;color:var(--orange);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;border-top:1px solid var(--border);margin-top:4px}
+.finding-cat:first-child{border-top:none;margin-top:0}
+.finding-row{display:flex;align-items:flex-start;gap:10px;padding:7px 20px;font-size:13px;line-height:1.5;opacity:0;animation:fadein .25s ease forwards}
+.finding-row:hover{background:rgba(255,255,255,.02)}
+.sev-dot{flex-shrink:0;width:7px;height:7px;border-radius:50%;margin-top:5px}
+.dot-HIGH{background:var(--red)}.dot-MEDIUM{background:var(--amber)}.dot-INFO{background:var(--dim)}
+.sev-badge{flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;width:52px}
+.badge-HIGH{color:var(--red)}.badge-MEDIUM{color:var(--amber)}.badge-INFO{color:var(--dim)}
+.finding-msg{color:var(--text);flex:1}
+.finding-msg.dim{color:var(--dim)}
+.no-findings{padding:24px;text-align:center;color:var(--green);font-family:'JetBrains Mono',monospace;font-size:13px}
+@keyframes fadein{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+
+/* DIVIDER */
+.divider{max-width:1100px;margin:0 auto;padding:0 24px}
+.divider hr{border:none;border-top:1px solid var(--border)}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:860px;margin:0 auto 0;padding:16px 24px 0}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-box .sn{font-size:28px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal)}
+.stat-box .sl{font-size:11px;color:var(--dim);margin-top:4px}
+.layers-row{max-width:860px;margin:16px auto 0;padding:0 24px}
+.layers-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
+.layers-title{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.layers-grid{display:flex;flex-wrap:wrap;gap:8px}
+.layer-chip{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:6px}
+.layer-chip span{color:var(--teal)}
+
+/* FILE UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s;position:relative;margin-bottom:16px;background:var(--panel2)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--orange);background:rgba(251,146,60,.05)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:36px;margin-bottom:10px}
+.upload-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--dim)}
+.upload-types{display:flex;justify-content:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.upload-type{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.file-selected{background:rgba(251,146,60,.1);border-color:var(--orange);border-style:solid}
+.file-name{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--orange);margin-top:6px}
+.divider-or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--dim);font-size:13px}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* BLOG */
+.blog-section{max-width:1100px;margin:0 auto;padding:48px 24px 60px}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.blog-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;cursor:pointer}
+.blog-card:hover{border-color:rgba(251,146,60,.25);transform:translateY(-2px)}
+.blog-thumb{height:140px;display:flex;align-items:center;justify-content:center;font-size:44px}
+.blog-body{padding:18px}
+.blog-tag{font-size:11px;color:var(--orange);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.blog-card h3{font-size:14px;font-weight:600;margin-bottom:7px;line-height:1.4}
+.blog-card p{color:var(--dim);font-size:12px;line-height:1.6;margin:0}
+
+footer{border-top:1px solid var(--border);padding:28px 24px;text-align:center;color:var(--dim);font-size:13px;margin-top:20px}
+/* CONTACT */
+.contact-section{padding:60px 24px;max-width:1100px;margin:0 auto}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.contact-info h3{font-size:20px;font-weight:700;margin-bottom:10px}
+.contact-info p{color:var(--dim);font-size:14px;line-height:1.7;margin-bottom:24px}
+.contact-items{display:flex;flex-direction:column;gap:14px}
+.ci{display:flex;align-items:center;gap:14px}
+.ci-icon{width:40px;height:40px;border-radius:10px;background:var(--panel2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.ci-label{font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.contact-form{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px}
+.cf-label{display:block;font-size:11px;color:var(--dim);margin-bottom:6px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.cf-input{width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none;transition:.2s}
+.cf-input:focus{border-color:var(--teal)}
+.ta{height:110px;resize:vertical;font-family:'Space Grotesk',sans-serif}
+.cf-btn{background:var(--teal);color:#00131a;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:.2s}
+.cf-btn:hover{filter:brightness(1.1)}
+/* FOOTER */
+.page-footer{border-top:1px solid var(--border);background:var(--bg)}
+.footer-inner{max-width:1100px;margin:0 auto;padding:44px 24px 28px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
+.footer-brand p{color:var(--dim);font-size:13px;line-height:1.7;margin-top:12px;max-width:260px}
+.footer-col h4{font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;font-family:'JetBrains Mono',monospace}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:8px}
+.footer-col ul li a{color:var(--dim);font-size:13px;transition:.2s}
+.footer-col ul li a:hover{color:var(--teal)}
+.footer-bottom{max-width:1100px;margin:0 auto;padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--dim)}
+.social-btn{width:34px;height:34px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--dim);transition:.2s;margin-left:6px}
+.social-btn:hover{border-color:var(--teal);color:var(--teal)}
+@media(max-width:768px){.contact-grid{grid-template-columns:1fr}.footer-inner{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.nav-links,.nav-cta{display:none}.result-header{flex-direction:column;text-align:center}.sev-pills{justify-content:center}}
+
+/* HAMBURGER MENU */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel2)}
+.hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px}
+.mobile-menu{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(6,11,20,.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;backdrop-filter:blur(12px)}
+.mobile-menu.open{display:flex}
+.mobile-menu a{font-size:20px;font-weight:600;color:var(--text);text-decoration:none;transition:.2s}
+.mobile-menu a:hover{color:var(--teal)}
+.mobile-close{position:absolute;top:20px;right:20px;font-size:24px;cursor:pointer;color:var(--dim);border:1px solid var(--border);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.mobile-cta-btn{background:var(--teal) !important;color:#00131a !important;padding:10px 28px;border-radius:10px;font-weight:700 !important}
+@media(max-width:768px){.nav-links,.nav-cta{display:none !important}.hamburger{display:flex}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <img src="/static/logo.png" alt="PhishIntelix">
+    <div class="logo-text">
+      <span class="logo-name">PhishIntelix</span>
+      <span class="logo-tag">DETECT · ANALYZE · PROTECT</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="/">Scanner</a>
+    <a href="/email-scanner" class="active">Email Scanner</a>
+    <a href="/history">History</a>
+    <a href="/#features">Features</a>
+    <a href="/#blog">Blog</a>
+    <a href="/#contact">Contact</a>
+  </div>
+  <a href="/" class="nav-cta">URL Scanner</a>
+  <div class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></div>
+</nav>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
+  <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
+  <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
+  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  <a href="/about" onclick="closeMobileMenu()">ℹ️ About</a>
+  <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
+  <a href="/#contact" onclick="closeMobileMenu()">📬 Contact</a>
+  <a href="/email-scanner" class="mobile-cta-btn" onclick="closeMobileMenu()">⚡ Scan Email</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">📧 Email Security · Beta Feature</div>
+  <h1>Email <span>Phishing</span> Scanner</h1>
+  <p>Paste your email content and get an instant 10-layer phishing analysis — urgency detection, hidden links, spelling checks, VirusTotal + Google Safe Browsing on every embedded URL.</p>
+</div>
+
+<!-- SCAN INPUT -->
+<div class="scan-wrap" style="padding-top:40px">
+  <div class="panel">
+    <div class="panel-head">📨 paste_email.txt — Analyse Email Content</div>
+    <div class="panel-body">
+      <form method="POST" action="/email-scanner" enctype="multipart/form-data">
+
+        <!-- FILE UPLOAD -->
+        <div class="field">
+          <label>Upload Email File (optional)</label>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" name="email_file" id="emailFile"
+                   accept=".eml,.msg,.txt,.html,.htm"
+                   onchange="onFileSelect(this)">
+            <div class="upload-icon">📎</div>
+            <div class="upload-title">Drop your email file here or click to browse</div>
+            <div class="upload-sub">Supported formats:</div>
+            <div class="upload-types">
+              <span class="upload-type">.eml</span>
+              <span class="upload-type">.msg</span>
+              <span class="upload-type">.txt</span>
+              <span class="upload-type">.html</span>
+            </div>
+            <div class="file-name" id="fileName"></div>
+          </div>
+        </div>
+
+        <div class="divider-or">or paste manually below</div>
+
+
+        <div class="field">
+          <label>Full Email Body / Content</label>
+          <textarea class="cf-input ta" name="email_text"
+                    placeholder="Paste the full email content here — body text, HTML source, embedded links...">{{ request.form.get('email_text', '') }}</textarea>
+        </div>
+
+        <button type="submit" class="scan-btn">⚡ ANALYSE EMAIL</button>
+      </form>
+      <div class="hint">
+        💡 For best results paste the complete email including any links visible in the body.<br>
+        💡 To include headers: In Gmail click ⋮ → Show original → copy everything.<br>
+        💡 HTML emails: right-click → View Page Source → copy and paste here.
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- RESULT -->
+  {% if result %}
+  {% set pct = result.score %}
+  {% set circ = 2 * 3.14159265 * 38 %}
+  {% set offset = circ * (1 - pct / 100) %}
+  <div class="panel">
+    <div class="result-header">
+      <div class="gauge-wrap">
+        <svg width="94" height="94" viewBox="0 0 94 94">
+          <circle cx="47" cy="47" r="38" fill="none" stroke="#1e293b" stroke-width="9"/>
+          <circle cx="47" cy="47" r="38" fill="none" class="stroke-{{ result.verdict }}"
+                  stroke-width="9" stroke-linecap="round"
+                  stroke-dasharray="{{ circ }}" stroke-dashoffset="{{ offset }}"/>
+        </svg>
+        <div class="gauge-label">
+          <span class="gauge-pct c-{{ result.verdict }}">{{ pct }}%</span>
+          <span class="gauge-sub">risk</span>
+        </div>
+      </div>
+      <div class="result-meta">
+        <div class="verdict-text c-{{ result.verdict }}">{{ result.label }}</div>
+        {% if result.sender %}<div class="verdict-sender">📧 {{ result.sender }}</div>{% endif %}
+        <div class="sev-pills">
+          <span class="sev-pill sev-high">🔴 HIGH {{ result.summary.high }}</span>
+          <span class="sev-pill sev-med">🟡 MEDIUM {{ result.summary.medium }}</span>
+          <span class="sev-pill sev-info">ℹ INFO {{ result.summary.info }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="findings-body">
+      {% if result.findings %}
+        {% set ns = namespace(prev_cat='') %}
+        {% for f in result.findings %}
+          {% if f.category != ns.prev_cat %}
+            <div class="finding-cat">{{ f.category }}</div>
+            {% set ns.prev_cat = f.category %}
+          {% endif %}
+          <div class="finding-row" style="animation-delay:{{ loop.index0 * 0.04 }}s">
+            <span class="sev-dot dot-{{ f.severity }}"></span>
+            <span class="sev-badge badge-{{ f.severity }}">[{{ f.severity }}]</span>
+            <span class="finding-msg {% if f.severity == 'INFO' %}dim{% endif %}">{{ f.message }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="no-findings">✔ No phishing indicators detected in this email.</div>
+      {% endif %}
+    </div>
+
+    <!-- DOWNLOAD REPORT -->
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end">
+      <form method="POST" action="/download-email-report">
+        <input type="hidden" name="email_text" value="{{ result.email_text | e if result and result.email_text else request.form.get('email_text', '') | e }}">
+        <input type="hidden" name="sender_email" value="{{ result.sender | e if result and result.sender else '' }}">
+        <button type="submit" style="background:var(--green);color:#04140d;border:none;border-radius:10px;padding:10px 22px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:8px;transition:.2s">
+          ⬇ Download PDF Report
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-box"><div class="sn" id="es-scans">0</div><div class="sl">Emails Scanned</div></div>
+  <div class="stat-box"><div class="sn" id="es-phishing" style="color:var(--red)">0</div><div class="sl">Phishing Detected</div></div>
+  <div class="stat-box"><div class="sn" style="color:var(--green)">98.3%</div><div class="sl">Detection Accuracy</div></div>
+  <div class="stat-box"><div class="sn" style="color:var(--amber)">10</div><div class="sl">Detection Layers</div></div>
+</div>
+
+<!-- LAYERS ROW -->
+<div class="layers-row">
+  <div class="layers-box">
+    <div class="layers-title">⚡ 10-Layer Email Analysis Engine</div>
+    <div class="layers-grid">
+      <div class="layer-chip"><span>01</span> Urgency Detection</div>
+      <div class="layer-chip"><span>02</span> Social Engineering</div>
+      <div class="layer-chip"><span>03</span> Spelling Check</div>
+      <div class="layer-chip"><span>04</span> Shortened Links</div>
+      <div class="layer-chip"><span>05</span> Button Hidden Links</div>
+      <div class="layer-chip"><span>06</span> HTML Masked Links</div>
+      <div class="layer-chip"><span>07</span> Suspicious Attachments</div>
+      <div class="layer-chip"><span>08</span> Sender Verification</div>
+      <div class="layer-chip"><span>09</span> VirusTotal API</div>
+      <div class="layer-chip"><span>10</span> Google Safe Browsing</div>
+        <div class="layer-chip"><span>11</span> SPF / DKIM / DMARC</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+<!-- WHAT WE CHECK -->
+<div class="checks-section">
+  <div class="section-tag">Detection Engine</div>
+  <div class="section-title">What We Check</div>
+  <div class="checks-grid">
+    <div class="check-card"><div class="check-icon">⏰</div><h3>Urgency Detection</h3><p>Scans for high-pressure language like "act now", "24 hours", "suspended" — common fear tactics used in phishing.</p></div>
+    <div class="check-card"><div class="check-icon">🧠</div><h3>Social Engineering</h3><p>Detects 6 social engineering categories — Fear, Urgency, Authority, Reward, Curiosity, and Trust manipulation patterns.</p></div>
+    <div class="check-card"><div class="check-icon">🔤</div><h3>Spelling Mistakes</h3><p>Checks email body for misspelled common words (e.g. "accoont", "pasword") — a classic indicator of phishing emails.</p></div>
+    <div class="check-card"><div class="check-icon">🔗</div><h3>Shortened Link Detection</h3><p>Detects bit.ly, tinyurl, goo.gl and 15+ other URL shorteners embedded in the email body that hide the real destination.</p></div>
+    <div class="check-card"><div class="check-icon">🔘</div><h3>Button Hidden Links</h3><p>Finds JavaScript onclick buttons and styled anchor tags used to disguise malicious links as innocent buttons.</p></div>
+    <div class="check-card"><div class="check-icon">🎭</div><h3>HTML Masked Links</h3><p>Detects anchor text mismatches (e.g. "Click Here" pointing to evil.xyz) and links where display URL differs from href.</p></div>
+    <div class="check-card"><div class="check-icon">📎</div><h3>Suspicious Attachments</h3><p>Flags mentions of .exe, .bat, .js, .vbs, .scr and other dangerous file types commonly used to deliver malware.</p></div>
+    <div class="check-card"><div class="check-icon">👤</div><h3>Sender Verification</h3><p>Checks sender domain against 25+ popular brands for impersonation, typosquatting, and free email provider abuse.</p></div>
+    <div class="check-card"><div class="check-icon">🌐</div><h3>VirusTotal API</h3><p>Every URL found in the email is checked against 70+ antivirus engines via VirusTotal for known malicious content.</p></div>
+    <div class="check-card"><div class="check-icon">🔵</div><h3>Google Safe Browsing</h3><p>All embedded URLs are cross-checked against Google's Safe Browsing database for malware, phishing, and unwanted software.</p></div>
+    <div class="check-card"><div class="check-icon">🔐</div><h3>SPF / DKIM / DMARC</h3><p>Parses raw email headers to verify SPF sender authorisation, DKIM cryptographic signature validity, and DMARC domain alignment policy — detects spoofed and forged emails.</p></div>
+  </div>
+</div>
+
+<div class="divider"><hr></div>
+
+<!-- BLOG -->
+<div class="blog-section">
+  <div class="section-tag">Learn More</div>
+  <div class="section-title">Email Security Blogs</div>
+  <div class="blog-grid">
+    <a href="/blog/spotting-phishing-emails" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#fb923c22,#fb923c08)">📧</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Spotting Phishing Emails</h3><p>Urgent language, fake sender domains, masked links — the social engineering patterns that fool millions.</p></div></div>
+    </a>
+    <a href="/blog/email-header-analysis" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#00e5ff22,#00e5ff08)">📨</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Email Header Analysis</h3><p>How to read SPF, DKIM, DMARC results and spot forged email headers that reveal phishing attempts.</p></div></div>
+    </a>
+    <a href="/blog/anatomy-phishing-email" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#ff4d6d22,#ff4d6d08)">🔬</div><div class="blog-body"><div class="blog-tag">Email Security</div><h3>Anatomy of a Phishing Email</h3><p>Every component of a phishing email dissected — fake domains, fear triggers, masked links explained.</p></div></div>
+    </a>
+    <a href="/blog/open-redirect" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#a855f722,#a855f708)">🔀</div><div class="blog-body"><div class="blog-tag">Advanced</div><h3>Open Redirect Attacks</h3><p>How attackers hide malicious URLs inside trusted domain links using redirect parameters.</p></div></div>
+    </a>
+    <a href="/blog/homograph-typosquatting" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#fbbf2422,#fbbf2408)">🔤</div><div class="blog-body"><div class="blog-tag">Advanced</div><h3>Homograph & Typosquatting</h3><p>Look-alike domains like paypa1.com and Unicode character substitution attacks explained.</p></div></div>
+    </a>
+    <a href="/blog/what-is-phishing" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#ff4d6d22,#ff4d6d08)">🎣</div><div class="blog-body"><div class="blog-tag">Basics</div><h3>What Is a Phishing Attack?</h3><p>How cybercriminals impersonate trusted organisations to steal credentials and money.</p></div></div>
+    </a>
+    <a href="/blog/10-signs-phishing" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#00e5ff22,#00e5ff08)">🔍</div><div class="blog-body"><div class="blog-tag">Guide</div><h3>10 Signs of a Phishing Website</h3><p>Quick checks before entering any sensitive information on a website you landed on via email.</p></div></div>
+    </a>
+    <a href="/blog/ml-detects-phishing" target="_blank">
+      <div class="blog-card"><div class="blog-thumb" style="background:linear-gradient(135deg,#4ade8022,#4ade8008)">🤖</div><div class="blog-body"><div class="blog-tag">Technical</div><h3>How ML Detects Phishing</h3><p>From feature extraction to ensemble classifiers — the intelligence behind automated threat scoring.</p></div></div>
+    </a>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="contact-section" id="contact">
+  <div class="section-tag" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px">Get in Touch</div>
+  <div class="section-title" style="font-size:28px;font-weight:700;margin-bottom:28px">Contact Us</div>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h3>Have a question or want to collaborate?</h3>
+      <p>Whether you're a security researcher, student, or organization looking to integrate PhishIntelix — we'd love to hear from you.</p>
+      <div class="contact-items">
+        <div class="ci"><div class="ci-icon">✉️</div><div><div class="ci-label">Official Email</div><a href="mailto:{{ cfg.AUTHOR_EMAIL }}" style="color:var(--teal)">{{ cfg.AUTHOR_EMAIL }}</a></div></div>
+        <div class="ci"><div class="ci-icon">🐙</div><div><div class="ci-label">GitHub</div><a href="{{ cfg.GITHUB_URL }}" target="_blank" style="color:var(--teal)">{{ cfg.GITHUB_URL | replace("https://", "") }}</a></div></div>
+        <div class="ci"><div class="ci-icon">🔗</div><div><div class="ci-label">LinkedIn</div><a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank" style="color:var(--teal)">linkedin.com/in/jagadish-ray</a></div></div>
+      </div>
+    </div>
+    <div class="contact-form">
+      <div id="contact-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:4px"></div>
+      <div><label class="cf-label">Your Name</label><input class="cf-input" id="cf-name" type="text" placeholder="Your name"></div>
+      <div><label class="cf-label">Email Address</label><input class="cf-input" id="cf-email" type="email" placeholder="you@example.com"></div>
+      <div><label class="cf-label">Message</label><textarea class="cf-input ta" id="cf-message" placeholder="Your message..."></textarea></div>
+      <button class="cf-btn" id="cf-submit" onclick="sendContact()">Send Message</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="page-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="/static/logo.png" alt="PhishIntelix" style="height:52px;width:52px;object-fit:contain;border-radius:10px">
+        <div style="display:flex;flex-direction:column;line-height:1.2;gap:1px">
+          <span style="font-size:24px;font-weight:700;color:var(--teal)">PhishIntelix</span>
+          <span style="font-size:8px;color:var(--dim);letter-spacing:2.5px;font-family:'JetBrains Mono',monospace;font-weight:400">DETECT · ANALYZE · PROTECT</span>
+        </div>
+      </div>
+      <p>AI-powered phishing URL detection using machine learning and 5-layer advanced threat analysis.</p>
+    </div>
+    <div class="footer-col"><h4>Product</h4><ul>
+      <li><a href="/#scan">URL Scanner</a></li>
+      <li><a href="/email-scanner">Email Scanner</a></li>
+      <li><a href="/#models">ML Models</a></li>
+      <li><a href="/#features">Features</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Learn</h4><ul>
+      <li><a href="/#blog">Blog</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/#how">How It Works</a></li>
+      <li><a href="/#models">Model Comparison</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Connect</h4><ul>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="{{ cfg.GITHUB_URL }}" target="_blank">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank">LinkedIn</a></li>
+      <li><a href="mailto:{{ cfg.AUTHOR_EMAIL }}">Email Us</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© {{ cfg.COPYRIGHT_YEAR }} {{ cfg.SITE_NAME }}. All rights reserved. Built with ❤️ by {{ cfg.AUTHOR_NAME }}.</p>
+    <div>
+      <a href="mailto:{{ cfg.AUTHOR_EMAIL }}" class="social-btn" title="Email">✉</a>
+      <a href="https://www.linkedin.com/in/jagadish-ray-6536a5290/" target="_blank" class="social-btn" title="LinkedIn">in</a>
+      <a href="{{ cfg.GITHUB_URL }}" target="_blank" class="social-btn" title="GitHub">⌥</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+async function sendContact() {
+  const name = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const message = document.getElementById('cf-message').value.trim();
+  const msg = document.getElementById('contact-msg');
+  const btn = document.getElementById('cf-submit');
+  if (!name || !email || !message) {
+    msg.style.display='block';msg.style.background='rgba(255,77,109,.1)';msg.style.color='var(--red)';
+    msg.textContent='Please fill in all fields.'; return;
+  }
+  btn.textContent='Sending...'; btn.disabled=true;
+  try {
+    const r = await fetch('/contact', {method:'POST',headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name,email,message})});
+    const d = await r.json();
+    msg.style.display='block';
+    if(d.success){msg.style.background='rgba(74,222,128,.1)';msg.style.color='var(--green)';msg.textContent='Message sent successfully!';}
+    else{msg.style.background='rgba(255,77,109,.1)';msg.style.color='var(--red)';msg.textContent='Failed to send. Please email us directly.';}
+  } catch(e){msg.style.display='block';msg.style.background='rgba(255,77,109,.1)';msg.style.color='var(--red)';msg.textContent='Error. Please email us directly.';}
+  btn.textContent='Send Message'; btn.disabled=false;
+}
+
+// File upload handler
+function onFileSelect(input) {
+  const zone = document.getElementById('uploadZone');
+  const nameEl = document.getElementById('fileName');
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    zone.classList.add('file-selected');
+    nameEl.textContent = '✔ ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+  }
+}
+
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+if (zone) {
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      document.getElementById('emailFile').files = e.dataTransfer.files;
+      onFileSelect(document.getElementById('emailFile'));
+    }
+  });
+}
+
+// Load email-specific stats
+async function loadStats() {
+  try {
+    const resp = await fetch('/stats');
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const s = document.getElementById('es-scans');
+    const p = document.getElementById('es-phishing');
+    if (s) s.textContent = (data.email_scans || 0).toLocaleString();
+    if (p) p.textContent = (data.email_phishing || 0).toLocaleString();
+  } catch(e) {
+    console.error('Stats error:', e);
+  }
+}
+loadStats();
+setInterval(loadStats, 5000);
+</script>
+
+<script>
+function openMobileMenu(){
+  document.getElementById('mobileMenu').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>

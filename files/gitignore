@@ -1,0 +1,15 @@
+# Secret files - never upload
+config_local.py
+*.json
+*.log
+__pycache__/
+*.pyc
+.env
+venv/
+env/
+
+# Large files not needed
+confusion_matrices.png
+roc_curves.png
+model_comparison.py
+train_model.py
