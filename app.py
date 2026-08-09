@@ -30,13 +30,45 @@ import json, threading
 STATS_FILE = 'stats.json'
 _stats_lock = threading.Lock()
 
+# Global in-memory cache — persists within server session
+_STATS_CACHE = None
+
 def _load_stats():
+    global _STATS_CACHE
+    # Try Redis first (persistent across restarts)
+    if _redis_client:
+        try:
+            data = _redis_client.get('phishintelix_stats')
+            if data:
+                parsed = json.loads(data)
+                _STATS_CACHE = parsed
+                return dict(parsed)
+        except Exception:
+            pass
+    # Fall back to in-memory cache
+    if _STATS_CACHE is not None:
+        return dict(_STATS_CACHE)
+    # Fall back to file
     try:
-        return json.load(open(STATS_FILE))
+        data = json.load(open(STATS_FILE))
     except Exception:
-        return {'total_scans': 0, 'phishing_detected': 0}
+        data = {'total_scans': 0, 'phishing_detected': 0,
+                'email_scans': 0, 'email_phishing': 0}
+    data.setdefault('email_scans', 0)
+    data.setdefault('email_phishing', 0)
+    _STATS_CACHE = dict(data)
+    return dict(_STATS_CACHE)
 
 def _save_stats(stats):
+    global _STATS_CACHE
+    _STATS_CACHE = dict(stats)
+    # Save to Redis if available (persistent)
+    if _redis_client:
+        try:
+            _redis_client.set('phishintelix_stats', json.dumps(stats))
+        except Exception:
+            pass
+    # Also save to file as backup
     try:
         json.dump(stats, open(STATS_FILE, 'w'))
     except Exception:

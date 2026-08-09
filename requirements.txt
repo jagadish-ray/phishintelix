@@ -4,8 +4,9 @@ scikit-learn
 joblib
 matplotlib
 pyspellchecker
-gunicorn
-reportlab
-requests
 python-whois
+requests
+reportlab
 extract-msg
+gunicorn
+redis
