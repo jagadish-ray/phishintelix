@@ -873,6 +873,18 @@ def about():
     return render_template('about.html', cfg=config)
 
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return app.send_static_file('sitemap.xml') if os.path.exists('static/sitemap.xml') else         flask.Response(open('sitemap.xml').read(), mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    return flask.Response(
+        "User-agent: *\nAllow: /\nSitemap: https://phishintelix.com/sitemap.xml",
+        mimetype='text/plain'
+    )
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
 # Note: the above line was a duplicate, removing it below
