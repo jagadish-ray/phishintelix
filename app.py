@@ -875,7 +875,12 @@ def about():
 
 @app.route('/sitemap.xml')
 def sitemap():
-    return app.send_static_file('sitemap.xml') if os.path.exists('static/sitemap.xml') else         flask.Response(open('sitemap.xml').read(), mimetype='application/xml')
+    try:
+        xml = open('sitemap.xml').read()
+    except Exception:
+        xml = '<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://phishintelix.com/</loc></url></urlset>'
+    import flask as _fl
+    return _fl.Response(xml, mimetype='application/xml')
 
 @app.route('/robots.txt')
 def robots():
