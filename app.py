@@ -2,6 +2,16 @@
 app.py  —  PhishIntelix full web app
 """
 import os
+
+# Redis for persistent stats (optional)
+_redis_client = None
+try:
+    import redis as _redis
+    _redis_url = os.environ.get('REDIS_URL', '')
+    if _redis_url:
+        _redis_client = _redis.from_url(_redis_url, decode_responses=True, socket_timeout=2)
+except Exception:
+    _redis_client = None
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
