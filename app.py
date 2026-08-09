@@ -3,15 +3,39 @@ app.py  —  PhishIntelix full web app
 """
 import os
 
-# Redis for persistent stats (optional)
-_redis_client = None
-try:
-    import redis as _redis
-    _redis_url = os.environ.get('REDIS_URL', '')
-    if _redis_url:
-        _redis_client = _redis.from_url(_redis_url, decode_responses=True, socket_timeout=2)
-except Exception:
-    _redis_client = None
+# Persistent stats using JSONBin.io (free, no installation needed)
+_JSONBIN_BIN_ID  = os.environ.get('JSONBIN_BIN_ID', '')
+_JSONBIN_API_KEY = os.environ.get('JSONBIN_API_KEY', '')
+
+def _fetch_remote_stats():
+    if not _JSONBIN_BIN_ID or not _JSONBIN_API_KEY:
+        return None
+    try:
+        import requests as _req
+        r = _req.get(
+            f'https://api.jsonbin.io/v3/b/{_JSONBIN_BIN_ID}/latest',
+            headers={'X-Master-Key': _JSONBIN_API_KEY},
+            timeout=3
+        )
+        if r.status_code == 200:
+            return r.json().get('record', {})
+    except Exception:
+        pass
+    return None
+
+def _push_remote_stats(stats):
+    if not _JSONBIN_BIN_ID or not _JSONBIN_API_KEY:
+        return
+    try:
+        import requests as _req
+        _req.put(
+            f'https://api.jsonbin.io/v3/b/{_JSONBIN_BIN_ID}',
+            headers={'X-Master-Key': _JSONBIN_API_KEY, 'Content-Type': 'application/json'},
+            json=stats,
+            timeout=3
+        )
+    except Exception:
+        pass
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -45,20 +69,17 @@ _STATS_CACHE = None
 
 def _load_stats():
     global _STATS_CACHE
-    # Try Redis first (persistent across restarts)
-    if _redis_client:
-        try:
-            data = _redis_client.get('phishintelix_stats')
-            if data:
-                parsed = json.loads(data)
-                _STATS_CACHE = parsed
-                return dict(parsed)
-        except Exception:
-            pass
-    # Fall back to in-memory cache
+    # Use in-memory cache if available (same server session)
     if _STATS_CACHE is not None:
         return dict(_STATS_CACHE)
-    # Fall back to file
+    # Try remote JSONBin storage (persists across restarts)
+    remote = _fetch_remote_stats()
+    if remote:
+        remote.setdefault('email_scans', 0)
+        remote.setdefault('email_phishing', 0)
+        _STATS_CACHE = dict(remote)
+        return dict(remote)
+    # Fall back to local file
     try:
         data = json.load(open(STATS_FILE))
     except Exception:
@@ -72,13 +93,9 @@ def _load_stats():
 def _save_stats(stats):
     global _STATS_CACHE
     _STATS_CACHE = dict(stats)
-    # Save to Redis if available (persistent)
-    if _redis_client:
-        try:
-            _redis_client.set('phishintelix_stats', json.dumps(stats))
-        except Exception:
-            pass
-    # Also save to file as backup
+    # Save to remote JSONBin (persistent across restarts)
+    _push_remote_stats(stats)
+    # Also save locally as backup
     try:
         json.dump(stats, open(STATS_FILE, 'w'))
     except Exception:
