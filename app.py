@@ -119,18 +119,74 @@ def increment_email_stats(is_phishing):
 
 # ── Scan history (URL scans) ──
 HISTORY_FILE = 'scan_history.json'
+
+# JSONBin IDs for persistent history
+_JSONBIN_URL_BIN    = os.environ.get('JSONBIN_URL_BIN_ID', '')
+_JSONBIN_EMAIL_BIN  = os.environ.get('JSONBIN_EMAIL_BIN_ID', '')
+
+# In-memory history cache
+_URL_HISTORY_CACHE   = None
+_EMAIL_HISTORY_CACHE = None
+
+def _fetch_jsonbin(bin_id):
+    if not bin_id or not _JSONBIN_API_KEY:
+        return None
+    try:
+        import requests as _req
+        r = _req.get(
+            f'https://api.jsonbin.io/v3/b/{bin_id}/latest',
+            headers={'X-Master-Key': _JSONBIN_API_KEY},
+            timeout=4
+        )
+        if r.status_code == 200:
+            data = r.json().get('record', [])
+            return data if isinstance(data, list) else []
+    except Exception:
+        pass
+    return None
+
+def _push_jsonbin(bin_id, data):
+    if not bin_id or not _JSONBIN_API_KEY:
+        return
+    try:
+        import requests as _req
+        _req.put(
+            f'https://api.jsonbin.io/v3/b/{bin_id}',
+            headers={'X-Master-Key': _JSONBIN_API_KEY,
+                     'Content-Type': 'application/json'},
+            json=data,
+            timeout=4
+        )
+    except Exception:
+        pass
 _history_lock = threading.Lock()
 MAX_HISTORY = 200
 
 def _load_history():
+    global _URL_HISTORY_CACHE
+    if _URL_HISTORY_CACHE is not None:
+        return list(_URL_HISTORY_CACHE)
+    # Try JSONBin first
+    remote = _fetch_jsonbin(_JSONBIN_URL_BIN)
+    if remote is not None:
+        _URL_HISTORY_CACHE = remote
+        return list(remote)
+    # Fall back to local file
     try:
-        return json.load(open(HISTORY_FILE))
+        data = json.load(open(HISTORY_FILE))
+        _URL_HISTORY_CACHE = data
+        return data
     except Exception:
+        _URL_HISTORY_CACHE = []
         return []
 
 def _save_history(history):
+    global _URL_HISTORY_CACHE
+    trimmed = history[-MAX_HISTORY:]
+    _URL_HISTORY_CACHE = trimmed
+    _push_jsonbin(_JSONBIN_URL_BIN, trimmed)
     try:
-        json.dump(history[-MAX_HISTORY:], open(HISTORY_FILE, 'w'))
+        json.dump(trimmed, open(HISTORY_FILE, 'w'))
     except Exception:
         pass
 
@@ -153,14 +209,30 @@ EMAIL_HISTORY_FILE = 'email_scan_history.json'
 _email_lock = threading.Lock()
 
 def _load_email_history():
+    global _EMAIL_HISTORY_CACHE
+    if _EMAIL_HISTORY_CACHE is not None:
+        return list(_EMAIL_HISTORY_CACHE)
+    # Try JSONBin first
+    remote = _fetch_jsonbin(_JSONBIN_EMAIL_BIN)
+    if remote is not None:
+        _EMAIL_HISTORY_CACHE = remote
+        return list(remote)
+    # Fall back to local file
     try:
-        return json.load(open(EMAIL_HISTORY_FILE))
+        data = json.load(open(EMAIL_HISTORY_FILE))
+        _EMAIL_HISTORY_CACHE = data
+        return data
     except Exception:
+        _EMAIL_HISTORY_CACHE = []
         return []
 
 def _save_email_history(h):
+    global _EMAIL_HISTORY_CACHE
+    trimmed = h[-MAX_HISTORY:]
+    _EMAIL_HISTORY_CACHE = trimmed
+    _push_jsonbin(_JSONBIN_EMAIL_BIN, trimmed)
     try:
-        json.dump(h[-MAX_HISTORY:], open(EMAIL_HISTORY_FILE, 'w'))
+        json.dump(trimmed, open(EMAIL_HISTORY_FILE, 'w'))
     except Exception:
         pass
 
