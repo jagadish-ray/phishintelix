@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="google-site-verification" content="AzNd7y9WAqeQPRrYpQwzrcwC6G78yxtgeB-wVJaWqSE" />
 <title>PhishIntelix — AI Phishing Detection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -212,7 +211,7 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
     <div class="nav-links">
       <a href="#scan">Scanner</a>
       <a href="/email-scanner">Email Scanner</a>
-      <a href="/history">History</a>
+      
       <a href="#features">Features</a>
       <a href="#models">ML Models</a>
       <a href="#blog">Blog</a>
@@ -229,7 +228,7 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
   <div class="mobile-close" onclick="closeMobileMenu()">✕</div>
   <a href="/" onclick="closeMobileMenu()">🔍 URL Scanner</a>
   <a href="/email-scanner" onclick="closeMobileMenu()">📧 Email Scanner</a>
-  <a href="/history" onclick="closeMobileMenu()">📋 History</a>
+  
   <a href="/#features" onclick="closeMobileMenu()">⚙️ Features</a>
   <a href="/#comparison" onclick="closeMobileMenu()">🤖 ML Models</a>
   <a href="/#blog" onclick="closeMobileMenu()">📰 Blog</a>
@@ -249,7 +248,8 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
       <div class="scan-input-wrap">
         <span class="scan-prompt">$</span>
         <input type="text" name="url" placeholder="https://suspicious-site.com/login"
-               value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input">
+               value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input"
+               oninput="fixUrl(this)">
       </div>
       <button type="submit" class="scan-btn" id="scan-btn">⚡ SCAN URL</button>
     </form>
@@ -558,6 +558,16 @@ setInterval(async () => {
   } catch(e) {}
 }, 30000);
 
+
+function fixUrl(input) {
+  // Fix double slash issue: http: /url -> http://url
+  let val = input.value;
+  // Replace http:/ (single slash) with http://
+  val = val.replace(/^(https?):\/([^/])/, '$1://$2');
+  // Replace http: followed by space and slash
+  val = val.replace(/^(https?): \//, '$1://');
+  input.value = val;
+}
 
 function openMobileMenu() {
   document.getElementById('mobileMenu').classList.add('open');
