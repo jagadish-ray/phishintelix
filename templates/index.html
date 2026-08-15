@@ -560,12 +560,9 @@ setInterval(async () => {
 
 
 function fixUrl(input) {
-  // Fix double slash issue: http: /url -> http://url
   let val = input.value;
-  // Replace http:/ (single slash) with http://
-  val = val.replace(/^(https?):\/([^/])/, '$1://$2');
-  // Replace http: followed by space and slash
-  val = val.replace(/^(https?): \//, '$1://');
+  // Normalize: http:/ http: / http:// all become http://
+  val = val.replace(/^(https?)\s*:\s*[/]{0,2}\s*/, '$1://');
   input.value = val;
 }
 
