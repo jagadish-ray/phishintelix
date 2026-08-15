@@ -249,7 +249,7 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
         <span class="scan-prompt">$</span>
         <input type="text" name="url" placeholder="https://suspicious-site.com/login"
                value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input"
-               oninput="fixUrl(this)">
+               oninput="fixUrl(this)" onpaste="setTimeout(()=>fixUrl(this),10)">
       </div>
       <button type="submit" class="scan-btn" id="scan-btn">⚡ SCAN URL</button>
     </form>
@@ -561,9 +561,17 @@ setInterval(async () => {
 
 function fixUrl(input) {
   let val = input.value;
-  // Normalize: http:/ http: / http:// all become http://
-  val = val.replace(/^(https?)\s*:\s*[/]{0,2}\s*/, '$1://');
-  input.value = val;
+  let cursor = input.selectionStart;
+  // Fix common URL typing issues
+  // http: /google.com -> http://google.com
+  // http:/google.com -> http://google.com  
+  // https: /google.com -> https://google.com
+  val = val.replace(/^(https?)(\s*):(\s*)\/{0,2}(\s*)/, '$1://');
+  if (input.value !== val) {
+    input.value = val;
+    // Keep cursor at end
+    input.setSelectionRange(val.length, val.length);
+  }
 }
 
 function openMobileMenu() {
