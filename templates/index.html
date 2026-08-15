@@ -248,8 +248,7 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
       <div class="scan-input-wrap">
         <span class="scan-prompt">$</span>
         <input type="text" name="url" placeholder="https://suspicious-site.com/login"
-               value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input"
-               oninput="fixUrl(this)" onpaste="setTimeout(()=>fixUrl(this),10)">
+               value="{{ result.url if result else '' }}" autocomplete="off" autofocus id="scan-input">
       </div>
       <button type="submit" class="scan-btn" id="scan-btn">⚡ SCAN URL</button>
     </form>
@@ -500,6 +499,12 @@ footer{border-top:1px solid var(--border);padding:48px 24px 32px;margin-top:80px
 <script>
 // Instant scan counter on button click
 function onScan() {
+  // Fix URL before submitting — only runs on submit, not while typing
+  var input = document.getElementById('scan-input');
+  var val = input.value.trim();
+  // Fix: http: /x  http:/x  http:x  ->  http://x
+  val = val.replace(/^(https?)\s*:\s*\/*\s*([^\s\/])/, '$1://$2');
+  input.value = val;
   const url = document.getElementById('scan-input').value.trim();
   if (!url) return;
 
@@ -559,19 +564,14 @@ setInterval(async () => {
 }, 30000);
 
 
-function fixUrl(input) {
-  let val = input.value;
-  let cursor = input.selectionStart;
-  // Fix common URL typing issues
+function fixUrl(val) {
+  // Only fix if URL has space or missing slashes — not while user is still typing
   // http: /google.com -> http://google.com
-  // http:/google.com -> http://google.com  
-  // https: /google.com -> https://google.com
-  val = val.replace(/^(https?)(\s*):(\s*)\/{0,2}(\s*)/, '$1://');
-  if (input.value !== val) {
-    input.value = val;
-    // Keep cursor at end
-    input.setSelectionRange(val.length, val.length);
-  }
+  // http:/google.com  -> http://google.com
+  // http:google.com   -> http://google.com
+  val = val.trim();
+  val = val.replace(/^(https?)\s*:\s*\/{0,2}([^\s\/])/, '$1://$2');
+  return val;
 }
 
 function openMobileMenu() {
